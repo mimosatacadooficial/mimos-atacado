@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Menu, Search, ShoppingBag, Sparkles, Zap } from "lucide-react"
@@ -73,13 +74,19 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
             </SheetContent>
           </Sheet>
 
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground glow-sm">
-              <Sparkles className="size-5" />
-            </span>
-            <span className="font-heading text-lg font-semibold tracking-tight text-foreground md:text-xl">
-              Mimos Atacado
-            </span>
+          <Link
+            href="/"
+            className="flex items-center rounded-xl bg-white p-1.5 shadow-sm"
+            aria-label="Mimo Atacado"
+          >
+            <Image
+              src="/images/logo-mimo-atacado.png"
+              alt="Mimo Atacado"
+              width={160}
+              height={112}
+              priority
+              className="h-8 w-auto md:h-10"
+            />
           </Link>
 
           <form onSubmit={handleSearch} className="relative ml-2 hidden flex-1 max-w-xl md:flex">

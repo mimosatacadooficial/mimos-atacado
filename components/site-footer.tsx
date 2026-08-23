@@ -1,16 +1,20 @@
 import Link from "next/link"
-import { Sparkles, Truck, ShieldCheck, PackageOpen } from "lucide-react"
+import Image from "next/image"
+import { Truck, ShieldCheck, PackageOpen } from "lucide-react"
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-4">
         <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Sparkles className="size-4" />
-            </span>
-            <span className="font-heading text-lg font-semibold text-foreground">Mimos Atacado</span>
+          <Link href="/" className="flex w-fit items-center rounded-xl bg-white p-1.5 shadow-sm" aria-label="Mimo Atacado">
+            <Image
+              src="/images/logo-mimo-atacado.png"
+              alt="Mimo Atacado"
+              width={160}
+              height={112}
+              className="h-9 w-auto"
+            />
           </Link>
           <p className="text-sm leading-relaxed text-muted-foreground">
             Maquiagem, skincare e acessórios de beleza no atacado para revendedores em todo o Brasil.
