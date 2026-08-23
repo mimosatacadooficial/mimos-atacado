@@ -14,9 +14,10 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-8 md:px-6 md:py-10">
+    <div className="flex flex-col gap-14 py-8 md:py-10">
       {banners[0] && <HeroBanner banner={banners[0]} />}
 
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 md:px-6">
       <section className="grid gap-4 md:grid-cols-3">
         <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
@@ -72,9 +73,11 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+      </div>
 
       {banners[1] && <HeroBanner banner={banners[1]} />}
 
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 md:px-6">
       <section className="flex flex-col gap-6">
         <div className="flex items-baseline justify-between">
           <h2 className="font-heading text-xl font-semibold text-foreground md:text-2xl">Mais vendidos</h2>
@@ -92,6 +95,7 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+      </div>
     </div>
   )
 }
