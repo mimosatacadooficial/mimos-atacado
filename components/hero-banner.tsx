@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 
 type Banner = {
@@ -11,18 +10,14 @@ type Banner = {
 
 export function HeroBanner({ banner }: { banner: Banner }) {
   return (
-    <Link
-      href={banner.linkUrl || "/produtos"}
-      aria-label={banner.title}
-      className="relative block aspect-[16/9] w-full md:aspect-[21/9]"
-    >
-      <Image
+    <Link href={banner.linkUrl || "/produtos"} aria-label={banner.title} className="block w-full">
+      {/* Plain img (not next/image) so the banner always renders at its own natural
+          aspect ratio - width scales to 100% and height follows automatically,
+          which guarantees the artwork is never cropped on any screen size. */}
+      <img
         src={banner.imageUrl || "/placeholder.svg"}
         alt={banner.title}
-        fill
-        priority
-        className="object-cover"
-        sizes="100vw"
+        className="block h-auto w-full"
       />
     </Link>
   )
