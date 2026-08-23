@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
@@ -74,8 +74,11 @@ export function CheckoutForm() {
   const [form, setForm] = useState<FormState>(initialState)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [cepLoading, setCepLoading] = useState(false)
+  const [cepNotFound, setCepNotFound] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const numberInputRef = useRef<HTMLInputElement>(null)
+  const lastLookedUpCep = useRef<string>("")
 
   const shippingCents = subtotalCents >= 30000 ? 0 : 1990
   const totalCents = subtotalCents + shippingCents
@@ -85,26 +88,44 @@ export function CheckoutForm() {
     setErrors((prev) => ({ ...prev, [key]: undefined }))
   }
 
-  async function handleCepBlur() {
-    const digits = form.cep.replace(/\D/g, "")
-    if (digits.length !== 8) return
+  async function lookupCep(digits: string) {
+    if (digits.length !== 8 || digits === lastLookedUpCep.current) return
+    lastLookedUpCep.current = digits
     setCepLoading(true)
+    setCepNotFound(false)
     try {
       const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
       const data = await res.json()
-      if (!data.erro) {
-        setForm((prev) => ({
-          ...prev,
-          street: data.logradouro || prev.street,
-          neighborhood: data.bairro || prev.neighborhood,
-          city: data.localidade || prev.city,
-          state: data.uf || prev.state,
-        }))
+      if (data.erro) {
+        setCepNotFound(true)
+        return
       }
+      setForm((prev) => ({
+        ...prev,
+        street: data.logradouro || prev.street,
+        neighborhood: data.bairro || prev.neighborhood,
+        city: data.localidade || prev.city,
+        state: data.uf || prev.state,
+      }))
+      setErrors((prev) => ({ ...prev, street: undefined, city: undefined, state: undefined }))
+      // Move focus to "Número" since the address was just auto-filled.
+      numberInputRef.current?.focus()
     } catch {
-      // ignore lookup failure, user can fill manually
+      // Network error - the user can still fill the address in manually.
     } finally {
       setCepLoading(false)
+    }
+  }
+
+  function handleCepChange(value: string) {
+    const formatted = formatCep(value)
+    update("cep", formatted)
+    setCepNotFound(false)
+    const digits = formatted.replace(/\D/g, "")
+    if (digits.length === 8) {
+      lookupCep(digits)
+    } else {
+      lastLookedUpCep.current = ""
     }
   }
 
@@ -216,18 +237,24 @@ export function CheckoutForm() {
       <FieldSet>
         <FieldLegend>Endereço de entrega</FieldLegend>
         <FieldGroup>
-          <Field data-invalid={!!errors.cep} className="sm:max-w-xs">
+          <Field data-invalid={!!errors.cep || cepNotFound} className="sm:max-w-xs">
             <FieldLabel htmlFor="cep">CEP</FieldLabel>
             <Input
               id="cep"
               value={form.cep}
-              onChange={(e) => update("cep", formatCep(e.target.value))}
-              onBlur={handleCepBlur}
-              aria-invalid={!!errors.cep}
+              onChange={(e) => handleCepChange(e.target.value)}
+              aria-invalid={!!errors.cep || cepNotFound}
               placeholder="00000-000"
               inputMode="numeric"
+              autoComplete="postal-code"
             />
-            <FieldDescription>{cepLoading ? "Buscando endereço..." : "Preenchemos o endereço automaticamente."}</FieldDescription>
+            <FieldDescription>
+              {cepLoading
+                ? "Buscando endereço..."
+                : cepNotFound
+                  ? "CEP não encontrado. Preencha o endereço manualmente."
+                  : "Digite o CEP e preenchemos o endereço automaticamente."}
+            </FieldDescription>
             <FieldError>{errors.cep}</FieldError>
           </Field>
           <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
@@ -245,6 +272,7 @@ export function CheckoutForm() {
               <FieldLabel htmlFor="number">Número</FieldLabel>
               <Input
                 id="number"
+                ref={numberInputRef}
                 value={form.number}
                 onChange={(e) => update("number", e.target.value)}
                 aria-invalid={!!errors.number}
