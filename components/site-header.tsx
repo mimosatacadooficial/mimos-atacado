@@ -76,16 +76,16 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
 
           <Link
             href="/"
-            className="flex items-center rounded-xl bg-white p-1.5 shadow-sm"
+            className="flex flex-1 items-center justify-center md:flex-initial md:justify-start"
             aria-label="Mimo Atacado"
           >
             <Image
-              src="/images/logo-mimo-atacado.png"
+              src="/images/logo-mimo-atacado-transparent.png"
               alt="Mimo Atacado"
               width={160}
               height={112}
               priority
-              className="h-8 w-auto md:h-10"
+              className="h-12 w-auto md:h-14"
             />
           </Link>
 
