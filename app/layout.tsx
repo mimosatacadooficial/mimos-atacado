@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/sonner'
 import { Outfit, Inter } from 'next/font/google'
 import { CartProvider } from '@/lib/cart-context'
+import { UtmCapture } from '@/components/utm-capture'
 import './globals.css'
 
 const _outfit = Outfit({
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${_outfit.variable} ${_inter.variable} bg-background`}>
       <body className="font-sans antialiased">
+        <UtmCapture />
         <CartProvider>{children}</CartProvider>
         <Toaster position="top-center" richColors />
         {process.env.NODE_ENV === 'production' && <Analytics />}

@@ -12,6 +12,8 @@ const STATUS_LABELS: Record<string, string> = {
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
+  expirado: "PIX expirado",
+  reembolsado: "Reembolsado",
 }
 
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -20,6 +22,8 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
   enviado: "secondary",
   entregue: "default",
   cancelado: "destructive",
+  expirado: "destructive",
+  reembolsado: "outline",
 }
 
 export default async function AdminOrdersPage() {

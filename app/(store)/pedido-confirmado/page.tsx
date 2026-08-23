@@ -20,7 +20,7 @@ export default async function OrderConfirmedPage({
         <CheckCircle2 className="size-10 text-primary" />
       </div>
       <h1 className="mt-6 font-heading text-2xl font-semibold text-balance sm:text-3xl">
-        Pedido recebido com sucesso!
+        Pagamento aprovado!
       </h1>
       {numero && (
         <p className="mt-2 text-sm text-muted-foreground">
@@ -28,8 +28,8 @@ export default async function OrderConfirmedPage({
         </p>
       )}
       <p className="mt-4 text-pretty text-muted-foreground">
-        Em breve enviaremos as instruções de pagamento por email e WhatsApp. Guarde o número do seu
-        pedido para acompanhamento.
+        Recebemos a confirmação do seu pagamento via PIX. Em breve enviaremos as informações de envio.
+        Guarde o número do seu pedido para acompanhamento.
       </p>
       <Button
         render={<Link href="/produtos" />}

@@ -1,12 +1,20 @@
 "use server"
 
+import { headers } from "next/headers"
 import { db } from "@/lib/db"
-import { orders, orderItems, products } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { orders, orderItems } from "@/lib/db/schema"
+import { createPixPayment, type MonsterPayUtms } from "@/lib/monsterpay"
 
 export type CheckoutCartItem = {
   productId: number
   quantity: number
+}
+
+export type CheckoutCustomer = {
+  name: string
+  email: string
+  phone: string
+  document: string
 }
 
 export type CreateOrderResult =
@@ -20,15 +28,18 @@ function generateOrderNumber() {
 }
 
 /**
- * Creates an anonymous order for metrics/admin purposes only.
- * IMPORTANT: No personal customer data (name, email, phone, CPF, address) is ever
- * persisted here. Those fields are collected in the checkout UI only to be sent to a
- * payment API in a future step - this action only records product/quantity/price data
- * plus the shipping state/city for basic logistics context.
+ * Creates an order and generates a real PIX charge on MonsterPay.
+ * IMPORTANT: No personal customer data (name, email, phone, CPF, address) is
+ * ever persisted here. Those fields are sent directly to the MonsterPay API to
+ * generate the PIX charge, but only the resulting payment id/code and
+ * anonymous product/quantity/price/UTM data are saved to the database.
  */
 export async function createOrder(
   items: CheckoutCartItem[],
-  shipping: { state?: string; city?: string }
+  shipping: { state?: string; city?: string },
+  customer: CheckoutCustomer,
+  utms: MonsterPayUtms,
+  sourceUrl?: string
 ): Promise<CreateOrderResult> {
   if (!items.length) {
     return { success: false, error: "O carrinho está vazio." }
@@ -89,6 +100,26 @@ export async function createOrder(
     const totalCents = subtotalCents + shippingCents
     const orderNumber = generateOrderNumber()
 
+    const requestHeaders = await headers()
+    const documentDigits = customer.document.replace(/\D/g, "")
+    const phoneDigits = customer.phone.replace(/\D/g, "")
+
+    const paymentResult = await createPixPayment({
+      amountCents: totalCents,
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerDocument: documentDigits || undefined,
+      customerPhone: phoneDigits || undefined,
+      description: `Pedido ${orderNumber} - Mimos Atacado`,
+      sourceUrl,
+      userAgent: requestHeaders.get("user-agent") ?? undefined,
+      ...utms,
+    })
+
+    if (!paymentResult.success) {
+      return { success: false, error: paymentResult.error }
+    }
+
     const [order] = await db
       .insert(orders)
       .values({
@@ -100,6 +131,16 @@ export async function createOrder(
         shippingState: shipping.state ?? null,
         shippingCity: shipping.city ?? null,
         itemCount: itemsToInsert.reduce((sum, i) => sum + i.quantity, 0),
+        pixPaymentId: paymentResult.id,
+        pixCode: paymentResult.pixCode,
+        pixExpiresAt: paymentResult.expiresAt ? new Date(paymentResult.expiresAt) : null,
+        utmSource: utms.utmSource ?? null,
+        utmCampaign: utms.utmCampaign ?? null,
+        utmMedium: utms.utmMedium ?? null,
+        utmContent: utms.utmContent ?? null,
+        utmTerm: utms.utmTerm ?? null,
+        src: utms.src ?? null,
+        sck: utms.sck ?? null,
       })
       .returning()
 

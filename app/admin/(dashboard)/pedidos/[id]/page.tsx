@@ -72,6 +72,32 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
           </CardContent>
         </Card>
+
+        {(order.utmSource || order.utmCampaign || order.utmMedium || order.utmContent || order.utmTerm || order.src || order.sck) && (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Rastreamento (UTM)</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+              {[
+                { label: "Origem (utm_source)", value: order.utmSource },
+                { label: "Campanha (utm_campaign)", value: order.utmCampaign },
+                { label: "Conjunto (utm_medium)", value: order.utmMedium },
+                { label: "Anúncio (utm_content)", value: order.utmContent },
+                { label: "Termo (utm_term)", value: order.utmTerm },
+                { label: "src", value: order.src },
+                { label: "sck", value: order.sck },
+              ]
+                .filter((f) => f.value)
+                .map((f) => (
+                  <div key={f.label} className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">{f.label}</span>
+                    <span className="font-medium text-foreground">{f.value}</span>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

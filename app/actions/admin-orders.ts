@@ -11,6 +11,8 @@ export const ORDER_STATUSES = [
   "enviado",
   "entregue",
   "cancelado",
+  "expirado",
+  "reembolsado",
 ] as const
 
 export async function updateOrderStatus(id: number, status: string) {

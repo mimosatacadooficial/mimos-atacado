@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { createOrder } from "@/app/actions/orders"
+import { getStoredUtms } from "@/lib/utm"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -133,16 +134,19 @@ export function CheckoutForm() {
 
     startTransition(async () => {
       // Personal data (name, email, phone, CPF, address) is used only for this
-      // request and is never persisted to the database - it will be forwarded to
-      // the payment API once it is connected. Only anonymous order/product data
-      // is saved for admin metrics.
+      // request to generate the PIX charge with MonsterPay - it is never
+      // persisted to our database. Only anonymous order/product data is saved
+      // for admin metrics.
       const result = await createOrder(
         items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-        { state: form.state, city: form.city }
+        { state: form.state, city: form.city },
+        { name: form.name, email: form.email, phone: form.phone, document: form.cpf },
+        getStoredUtms(),
+        window.location.href
       )
       if (result.success) {
         clearCart()
-        router.push(`/pedido-confirmado?numero=${result.orderNumber}`)
+        router.push(`/pagamento?numero=${result.orderNumber}`)
       } else {
         setSubmitError(result.error)
       }
@@ -316,14 +320,15 @@ export function CheckoutForm() {
         {isPending ? (
           <>
             <Loader2 className="animate-spin" data-icon="inline-start" />
-            Finalizando pedido...
+            Gerando pagamento PIX...
           </>
         ) : (
-          "Finalizar pedido"
+          "Gerar pagamento PIX"
         )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        O pagamento será processado em breve. Seus dados pessoais não são armazenados em nosso banco de dados.
+        Você receberá um código PIX para pagamento imediato. Seus dados pessoais não são armazenados em
+        nosso banco de dados.
       </p>
     </form>
   )

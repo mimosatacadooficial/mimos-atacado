@@ -11,6 +11,8 @@ const STATUS_LABELS: Record<string, string> = {
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
+  expirado: "PIX expirado",
+  reembolsado: "Reembolsado",
 }
 
 export function OrderStatusSelect({ orderId, status }: { orderId: number; status: string }) {

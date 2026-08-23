@@ -64,6 +64,20 @@ export const orders = pgTable("orders", {
   shippingState: text("shipping_state"),
   shippingCity: text("shipping_city"),
   itemCount: integer("item_count").notNull().default(0),
+  // MonsterPay PIX charge data. No customer personal data (name, email,
+  // phone, CPF, address) is stored here - only what's needed to poll/display
+  // the payment.
+  pixPaymentId: text("pix_payment_id"),
+  pixCode: text("pix_code"),
+  pixExpiresAt: timestamp("pix_expires_at", { withTimezone: true }),
+  // UTM / campaign attribution, used for admin analytics only.
+  utmSource: text("utm_source"),
+  utmCampaign: text("utm_campaign"),
+  utmMedium: text("utm_medium"),
+  utmContent: text("utm_content"),
+  utmTerm: text("utm_term"),
+  src: text("src"),
+  sck: text("sck"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
