@@ -11,13 +11,14 @@ type Banner = {
 export function HeroBanner({ banner }: { banner: Banner }) {
   return (
     <Link href={banner.linkUrl || "/produtos"} aria-label={banner.title} className="block w-full">
-      {/* Plain img (not next/image) so the banner always renders at its own natural
-          aspect ratio - width scales to 100% and height follows automatically,
-          which guarantees the artwork is never cropped on any screen size. */}
+      {/* Mobile: fill a shorter, fixed-ratio frame (object-cover) so the banner
+          reads as a bold rectangle instead of a thin sliver. Desktop: the artwork
+          is wide enough that its natural ratio already looks right, so it's
+          shown uncropped from sm and up. */}
       <img
         src={banner.imageUrl || "/placeholder.svg"}
         alt={banner.title}
-        className="block h-auto w-full"
+        className="block aspect-[2/1] w-full object-cover object-center sm:aspect-auto sm:h-auto"
       />
     </Link>
   )
