@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Minus, Plus, ShoppingBag } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ function getUnitPrice(tiers: PriceTier[], base: number, quantity: number) {
 export function AddToCartForm({ productId, slug, name, image, basePriceCents, minQuantity, priceTiers }: Props) {
   const [quantity, setQuantity] = useState(minQuantity)
   const { addItem } = useCart()
+  const router = useRouter()
 
   const unitPrice = getUnitPrice(priceTiers, basePriceCents, quantity)
   const total = unitPrice * quantity
@@ -47,6 +49,7 @@ export function AddToCartForm({ productId, slug, name, image, basePriceCents, mi
       quantity
     )
     toast.success(`${name} adicionado ao carrinho`)
+    router.push("/carrinho")
   }
 
   return (
