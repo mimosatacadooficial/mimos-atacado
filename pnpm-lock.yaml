@@ -84,9 +84,6 @@ importers:
       postcss:
         specifier: ^8.5
         version: 8.5.6
-      sharp:
-        specifier: ^0.35.3
-        version: 0.35.3(@types/node@24.10.4)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -3329,7 +3326,8 @@ snapshots:
     dependencies:
       hono: 4.12.25
 
-  '@img/colour@1.1.0': {}
+  '@img/colour@1.1.0':
+    optional: true
 
   '@img/sharp-darwin-arm64@0.35.3':
     optionalDependencies:
@@ -4810,7 +4808,8 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.8.5: {}
+  semver@7.8.5:
+    optional: true
 
   send@1.2.1:
     dependencies:
@@ -4918,6 +4917,7 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.3
       '@img/sharp-win32-x64': 0.35.3
       '@types/node': 24.10.4
+    optional: true
 
   shebang-command@2.0.0:
     dependencies:
