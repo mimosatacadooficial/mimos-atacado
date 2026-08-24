@@ -54,7 +54,15 @@ export default async function AdminProductsPage() {
                     <span className="font-medium text-foreground">{product.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{product.categoryName}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  <div className="flex flex-wrap gap-1">
+                    {product.categoryNames.map((name) => (
+                      <Badge key={name} variant="outline" className="font-normal">
+                        {name}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
                 <TableCell>{formatCentsToBRL(product.basePriceCents)}</TableCell>
                 <TableCell>{product.stock}</TableCell>
                 <TableCell>

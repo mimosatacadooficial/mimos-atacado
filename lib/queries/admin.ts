@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
-import { orders, orderItems, products, categories, banners } from "@/lib/db/schema"
-import { and, desc, eq, gte, ne, sql } from "drizzle-orm"
+import { orders, orderItems, products, categories, banners, productCategories } from "@/lib/db/schema"
+import { and, desc, eq, gte, inArray, ne, sql } from "drizzle-orm"
 
 export async function getDashboardMetrics() {
   const startOfToday = new Date()
@@ -74,7 +74,7 @@ export async function getDashboardMetrics() {
 }
 
 export async function getAdminProducts() {
-  return db
+  const rows = await db
     .select({
       id: products.id,
       name: products.name,
@@ -89,6 +89,23 @@ export async function getAdminProducts() {
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .orderBy(desc(products.createdAt))
+
+  if (rows.length === 0) return []
+
+  const productIds = rows.map((r) => r.id)
+  const links = await db
+    .select({
+      productId: productCategories.productId,
+      categoryName: categories.name,
+    })
+    .from(productCategories)
+    .innerJoin(categories, eq(productCategories.categoryId, categories.id))
+    .where(inArray(productCategories.productId, productIds))
+
+  return rows.map((row) => {
+    const names = links.filter((l) => l.productId === row.id).map((l) => l.categoryName)
+    return { ...row, categoryNames: names.length > 0 ? names : [row.categoryName].filter(Boolean) as string[] }
+  })
 }
 
 export async function getAdminCategories() {

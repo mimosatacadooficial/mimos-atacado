@@ -16,7 +16,7 @@ import {
   FieldLegend,
   FieldSeparator,
 } from "@/components/ui/field"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Trash2, Plus } from "lucide-react"
 import { toast } from "sonner"
 
@@ -39,7 +39,8 @@ export function ProductForm({
   categories,
   initialProduct,
   initialTiers,
-}: {
+  initialCategoryIds,
+  }: {
   categories: Category[]
   initialProduct?: {
     id: number
@@ -57,13 +58,20 @@ export function ProductForm({
     sku: string | null
   }
   initialTiers?: Tier[]
+  initialCategoryIds?: number[]
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState(initialProduct?.name ?? "")
   const [slug, setSlug] = useState(initialProduct?.slug ?? "")
   const [slugTouched, setSlugTouched] = useState(!!initialProduct)
-  const [categoryId, setCategoryId] = useState<string>(String(initialProduct?.categoryId ?? categories[0]?.id ?? ""))
+  const [categoryIds, setCategoryIds] = useState<number[]>(
+    initialCategoryIds?.length
+      ? initialCategoryIds
+      : initialProduct?.categoryId
+        ? [initialProduct.categoryId]
+        : [],
+  )
   const [description, setDescription] = useState(initialProduct?.description ?? "")
   const [basePrice, setBasePrice] = useState(
     initialProduct ? (initialProduct.basePriceCents / 100).toFixed(2) : "",
@@ -82,6 +90,10 @@ export function ProductForm({
   function handleNameChange(value: string) {
     setName(value)
     if (!slugTouched) setSlug(slugify(value))
+  }
+
+  function toggleCategory(id: number, checked: boolean) {
+    setCategoryIds((prev) => (checked ? [...prev, id] : prev.filter((catId) => catId !== id)))
   }
 
   function updateImage(index: number, value: string) {
@@ -111,13 +123,13 @@ export function ProductForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!name.trim() || !slug.trim() || !categoryId || !basePrice) {
-      toast.error("Preencha os campos obrigatórios.")
+    if (!name.trim() || !slug.trim() || categoryIds.length === 0 || !basePrice) {
+      toast.error("Preencha os campos obrigatórios e selecione ao menos uma categoria.")
       return
     }
 
     const input: ProductInput = {
-      categoryId: Number(categoryId),
+      categoryIds,
       name: name.trim(),
       slug: slug.trim(),
       description: description.trim(),
@@ -178,28 +190,22 @@ export function ProductForm({
             <FieldLabel htmlFor="description">Descrição</FieldLabel>
             <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
           </Field>
+          <Field>
+            <FieldLabel>Categorias</FieldLabel>
+            <FieldDescription>Selecione uma ou mais categorias para este produto.</FieldDescription>
+            <div className="flex flex-wrap gap-x-6 gap-y-3 rounded-lg border border-border p-4">
+              {categories.map((cat) => (
+                <label key={cat.id} className="flex items-center gap-2 text-sm text-foreground">
+                  <Checkbox
+                    checked={categoryIds.includes(cat.id)}
+                    onCheckedChange={(checked) => toggleCategory(cat.id, checked === true)}
+                  />
+                  {cat.name}
+                </label>
+              ))}
+            </div>
+          </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="category">Categoria</FieldLabel>
-              <Select
-                value={categoryId}
-                onValueChange={setCategoryId}
-                items={categories.map((cat) => ({ value: String(cat.id), label: cat.name }))}
-              >
-                <SelectTrigger id="category" className="w-full">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={String(cat.id)}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
             <Field>
               <FieldLabel htmlFor="sku">SKU</FieldLabel>
               <Input id="sku" value={sku} onChange={(e) => setSku(e.target.value)} />

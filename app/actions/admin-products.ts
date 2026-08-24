@@ -1,14 +1,14 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { products, productPriceTiers } from "@/lib/db/schema"
+import { products, productPriceTiers, productCategories } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
 export type PriceTierInput = { minQuantity: number; priceCents: number }
 
 export type ProductInput = {
-  categoryId: number
+  categoryIds: number[]
   name: string
   slug: string
   description: string
@@ -27,7 +27,7 @@ export async function createProduct(input: ProductInput) {
   const [created] = await db
     .insert(products)
     .values({
-      categoryId: input.categoryId,
+      categoryId: input.categoryIds[0],
       name: input.name,
       slug: input.slug,
       description: input.description,
@@ -52,6 +52,15 @@ export async function createProduct(input: ProductInput) {
     )
   }
 
+  if (input.categoryIds.length > 0) {
+    await db.insert(productCategories).values(
+      input.categoryIds.map((categoryId) => ({
+        productId: created.id,
+        categoryId,
+      })),
+    )
+  }
+
   revalidatePath("/admin/produtos")
   revalidatePath("/produtos")
   return { id: created.id }
@@ -61,7 +70,7 @@ export async function updateProduct(id: number, input: ProductInput) {
   await db
     .update(products)
     .set({
-      categoryId: input.categoryId,
+      categoryId: input.categoryIds[0],
       name: input.name,
       slug: input.slug,
       description: input.description,
@@ -88,6 +97,16 @@ export async function updateProduct(id: number, input: ProductInput) {
     )
   }
 
+  await db.delete(productCategories).where(eq(productCategories.productId, id))
+  if (input.categoryIds.length > 0) {
+    await db.insert(productCategories).values(
+      input.categoryIds.map((categoryId) => ({
+        productId: id,
+        categoryId,
+      })),
+    )
+  }
+
   revalidatePath("/admin/produtos")
   revalidatePath("/produtos")
   revalidatePath(`/produto/${input.slug}`)
@@ -95,6 +114,8 @@ export async function updateProduct(id: number, input: ProductInput) {
 }
 
 export async function deleteProduct(id: number) {
+  await db.delete(productPriceTiers).where(eq(productPriceTiers.productId, id))
+  await db.delete(productCategories).where(eq(productCategories.productId, id))
   await db.delete(products).where(eq(products.id, id))
   revalidatePath("/admin/produtos")
   revalidatePath("/produtos")
@@ -108,5 +129,10 @@ export async function getProductWithTiers(id: number) {
     .from(productPriceTiers)
     .where(eq(productPriceTiers.productId, id))
     .orderBy(productPriceTiers.minQuantity)
-  return { product, tiers }
+  const categoryLinks = await db
+    .select({ categoryId: productCategories.categoryId })
+    .from(productCategories)
+    .where(eq(productCategories.productId, id))
+  const categoryIds = categoryLinks.length > 0 ? categoryLinks.map((c) => c.categoryId) : [product.categoryId]
+  return { product, tiers, categoryIds }
 }

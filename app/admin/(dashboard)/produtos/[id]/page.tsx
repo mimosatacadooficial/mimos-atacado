@@ -19,6 +19,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         categories={categories}
         initialProduct={data.product}
         initialTiers={data.tiers.map((t) => ({ minQuantity: t.minQuantity, priceCents: t.priceCents }))}
+        initialCategoryIds={data.categoryIds}
       />
     </div>
   )

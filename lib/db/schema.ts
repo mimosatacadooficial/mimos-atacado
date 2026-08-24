@@ -35,6 +35,13 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const productCategories = pgTable("product_categories", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  categoryId: integer("category_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const productPriceTiers = pgTable("product_price_tiers", {
   id: serial("id").primaryKey(),
   productId: integer("product_id").notNull(),

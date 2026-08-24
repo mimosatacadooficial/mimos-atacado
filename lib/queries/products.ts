@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
-import { products, productPriceTiers, categories } from "@/lib/db/schema"
-import { and, asc, desc, eq, ilike, or } from "drizzle-orm"
+import { products, productPriceTiers, categories, productCategories } from "@/lib/db/schema"
+import { and, asc, desc, eq, ilike, inArray, or } from "drizzle-orm"
 
 export type PriceTier = {
   minQuantity: number
@@ -56,10 +56,22 @@ export async function getAllActiveProducts() {
 export async function getProductsByCategorySlug(slug: string) {
   const [category] = await db.select().from(categories).where(eq(categories.slug, slug))
   if (!category) return { category: null, products: [] as ProductWithTiers[] }
+
+  const links = await db
+    .select({ productId: productCategories.productId })
+    .from(productCategories)
+    .where(eq(productCategories.categoryId, category.id))
+  const linkedIds = links.map((l) => l.productId)
+
+  const categoryMatch =
+    linkedIds.length > 0
+      ? or(eq(products.categoryId, category.id), inArray(products.id, linkedIds))
+      : eq(products.categoryId, category.id)
+
   const rows = await db
     .select()
     .from(products)
-    .where(and(eq(products.categoryId, category.id), eq(products.isActive, true)))
+    .where(and(categoryMatch, eq(products.isActive, true)))
     .orderBy(desc(products.createdAt))
   const withTiers = await attachTiers(rows)
   return { category, products: withTiers }
