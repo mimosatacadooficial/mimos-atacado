@@ -92,10 +92,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
           </div>
 
-          {product.description && (
-            <p className="text-sm leading-relaxed text-muted-foreground">{product.description}</p>
-          )}
-
           <AddToCartForm
             productId={product.id}
             slug={product.slug}
@@ -109,6 +105,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <p className="text-xs text-muted-foreground">
             {product.stock > 0 ? `${product.stock} unidades em estoque` : "Produto esgotado"}
           </p>
+
+          {product.description && (
+            <div className="flex flex-col gap-2 border-t border-border/60 pt-5">
+              <h2 className="font-heading text-base font-semibold text-foreground">Descrição</h2>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                {product.description}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
