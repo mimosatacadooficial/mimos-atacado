@@ -4,7 +4,6 @@ import { db } from "@/lib/db"
 import { products, productPriceTiers } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 
 export type PriceTierInput = { minQuantity: number; priceCents: number }
 
@@ -55,7 +54,7 @@ export async function createProduct(input: ProductInput) {
 
   revalidatePath("/admin/produtos")
   revalidatePath("/produtos")
-  redirect("/admin/produtos")
+  return { id: created.id }
 }
 
 export async function updateProduct(id: number, input: ProductInput) {
@@ -92,7 +91,7 @@ export async function updateProduct(id: number, input: ProductInput) {
   revalidatePath("/admin/produtos")
   revalidatePath("/produtos")
   revalidatePath(`/produto/${input.slug}`)
-  redirect("/admin/produtos")
+  return { id }
 }
 
 export async function deleteProduct(id: number) {
