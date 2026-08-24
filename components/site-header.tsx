@@ -52,6 +52,13 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
                 <SheetTitle className="font-heading text-xl">Categorias</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-1 px-4">
+                <Link
+                  href="/"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                >
+                  Início
+                </Link>
                 {categories.map((c) => (
                   <Link
                     key={c.slug}
@@ -140,6 +147,9 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
 
       <nav className="hidden bg-foreground md:block">
         <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-2.5">
+          <Link href="/" className="text-sm font-medium text-background/70 transition-colors hover:text-background">
+            Início
+          </Link>
           {categories.map((c) => (
             <Link
               key={c.slug}
