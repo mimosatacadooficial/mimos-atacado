@@ -1,6 +1,6 @@
 import keywordsData from "./seo-keywords.json"
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mimos-atacado-gilt.vercel.app"
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mimosatacado.com.br"
 
 export const SEO_KEYWORDS: string[] = keywordsData
 

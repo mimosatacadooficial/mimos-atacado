@@ -1,7 +1,22 @@
 import { MetadataRoute } from "next"
+import { headers } from "next/headers"
 import { SITE_URL } from "@/lib/seo"
 
-export default function robots(): MetadataRoute.Robots {
+export const dynamic = "force-dynamic"
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  let baseUrl = SITE_URL
+  try {
+    const h = await headers()
+    const host = h.get("x-forwarded-host") || h.get("host")
+    const proto = h.get("x-forwarded-proto") || "https"
+    if (host && !host.includes("localhost")) {
+      baseUrl = `${proto}://${host}`
+    }
+  } catch {
+    baseUrl = SITE_URL
+  }
+
   return {
     rules: [
       {
@@ -20,6 +35,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   }
 }
