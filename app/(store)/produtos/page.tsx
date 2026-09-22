@@ -3,8 +3,23 @@ import { ProductGrid } from "@/components/product-grid"
 import { getAllActiveProducts } from "@/lib/queries/products"
 
 export const metadata: Metadata = {
-  title: "Todos os produtos | Mimos Atacado",
-  description: "Explore todo o catálogo de maquiagem, skincare e beleza no atacado para revenda.",
+  title: "Maquiagem e Cosméticos no Atacado para Revenda | Catálogo Completo",
+  description:
+    "Confira nosso catálogo completo de maquiagem, skincare, produtos para cabelo, unhas e perfumaria no atacado com preços de fábrica para revendedoras e lojistas.",
+  alternates: {
+    canonical: "/produtos",
+  },
+  keywords: [
+    "comprar maquiagem no atacado",
+    "maquiagem atacado online",
+    "cosmeticos para revenda",
+    "produtos de beleza no atacado",
+    "fornecedor de maquiagem",
+    "distribuidora de cosmeticos",
+    "kit maquiagem revenda",
+    "maquiagem barata atacado",
+    "produtos para revender com lucro",
+  ],
 }
 
 export default async function ProductsPage() {

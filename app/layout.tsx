@@ -4,6 +4,8 @@ import { Toaster } from '@/components/ui/sonner'
 import { Outfit, Inter } from 'next/font/google'
 import { CartProvider } from '@/lib/cart-context'
 import { UtmCapture } from '@/components/utm-capture'
+import { JsonLd } from '@/components/json-ld'
+import { SITE_CONFIG, SITE_URL, SEO_KEYWORDS } from '@/lib/seo'
 import './globals.css'
 
 const _outfit = Outfit({
@@ -17,10 +19,61 @@ const _inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Mimos Atacado | Maquiagem e Beleza no Atacado para Revenda',
-  description:
-    'Compre maquiagem, skincare, perfumaria e acessórios de beleza no atacado com preços exclusivos para revenda. Descontos progressivos por quantidade e entrega para todo o Brasil.',
-  generator: 'v0.app',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_CONFIG.title,
+    template: '%s | Mimos Atacado',
+  },
+  description: SITE_CONFIG.description,
+  keywords: SEO_KEYWORDS,
+  applicationName: 'Mimos Atacado',
+  authors: [{ name: 'Mimos Atacado' }],
+  creator: 'Mimos Atacado',
+  publisher: 'Mimos Atacado',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: SITE_URL,
+    siteName: SITE_CONFIG.name,
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    images: [
+      {
+        url: SITE_CONFIG.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Mimos Atacado - Maquiagem e Cosméticos no Atacado para Revenda',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    images: [SITE_CONFIG.ogImage],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   icons: {
     icon: [
       {
@@ -55,6 +108,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${_outfit.variable} ${_inter.variable} bg-background`}>
+      <head>
+        <JsonLd />
+      </head>
       <body className="font-sans antialiased">
         <UtmCapture />
         <CartProvider>{children}</CartProvider>

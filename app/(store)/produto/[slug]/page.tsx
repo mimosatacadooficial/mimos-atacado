@@ -15,10 +15,25 @@ export async function generateMetadata({
   const { slug } = await params
   const product = await getProductBySlug(slug)
   if (!product) return {}
+  const title = `${product.name} no Atacado para Revenda | Mimos Atacado`
+  const description =
+    product.description ||
+    `Compre ${product.name} no atacado com preços exclusivos de fábrica para revendedoras e lojistas.`
   return {
-    title: `${product.name} no atacado | Mimos Atacado`,
-    description: product.description || `Compre ${product.name} no atacado com preços exclusivos para revenda.`,
+    title,
+    description,
+    alternates: {
+      canonical: `/produto/${slug}`,
+    },
     openGraph: {
+      title,
+      description,
+      images: product.images[0] ? [product.images[0]] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
       images: product.images[0] ? [product.images[0]] : [],
     },
   }

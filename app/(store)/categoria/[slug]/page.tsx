@@ -11,9 +11,21 @@ export async function generateMetadata({
   const { slug } = await params
   const { category } = await getProductsByCategorySlug(slug)
   if (!category) return {}
+  const title = `${category.name} no Atacado para Revenda | Mimos Atacado`
+  const description =
+    category.description ||
+    `Compre ${category.name} no atacado direto da fábrica com descontos progressivos para revender com lucro.`
   return {
-    title: `${category.name} no atacado | Mimos Atacado`,
-    description: category.description || `Compre ${category.name} no atacado com preços exclusivos para revenda.`,
+    title,
+    description,
+    alternates: {
+      canonical: `/categoria/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      images: category.imageUrl ? [category.imageUrl] : [],
+    },
   }
 }
 
