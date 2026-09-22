@@ -29,6 +29,29 @@ interface ProductsTableViewProps {
   initialProducts: AdminProductRow[]
 }
 
+function ProductThumbnail({ src, alt }: { src?: string; alt: string }) {
+  const [hasError, setHasError] = useState(false)
+
+  if (!src || hasError) {
+    return (
+      <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">
+        <Package className="size-5 opacity-50" />
+      </div>
+    )
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      className="object-cover"
+      onError={() => setHasError(true)}
+    />
+  )
+}
+
+
 export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
   const [products, setProducts] = useState(initialProducts)
   const [search, setSearch] = useState("")
@@ -152,15 +175,9 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted border border-border/50">
-                        {product.images[0] ? (
-                          <Image
-                            src={product.images[0] || "/placeholder.svg"}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : null}
+                        <ProductThumbnail src={product.images[0]} alt={product.name} />
                       </div>
+
                       <div className="flex flex-col">
                         <span className="font-medium text-foreground text-sm">{product.name}</span>
                         <span className="text-[11px] text-muted-foreground">ID: #{product.id}</span>
