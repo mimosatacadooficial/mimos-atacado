@@ -16,9 +16,9 @@ export const SITE_CONFIG = {
   url: SITE_URL,
   logo: "https://pub-db4e48567ea54fc7b07ee1ddbc1f01eb.r2.dev/images/logo-mimo-atacado.png",
   ogImage: "https://pub-db4e48567ea54fc7b07ee1ddbc1f01eb.r2.dev/banners/banner-atacado.png",
-  title: "Mimos Atacado ✨ Maquiagem e Cosméticos para Revenda",
+  title: "Mimos Atacado ✨ Maquiagem no Atacado para Revenda",
   description:
-    "Compre maquiagem, cosméticos, skincare, perfumaria e produtos de beleza no atacado direto do fornecedor. Preços exclusivos de fábrica para lojistas e revendedoras com descontos progressivos e entrega para todo o Brasil.",
+    "✨ Compre maquiagem e cosméticos no atacado direto de fábrica! Melhores marcas para revenda com descontos progressivos e envio rápido para todo o Brasil.",
 }
 
 /**
