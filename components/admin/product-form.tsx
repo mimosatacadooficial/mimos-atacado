@@ -17,7 +17,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, Upload, Loader2, Image as ImageIcon } from "lucide-react"
 import { toast } from "sonner"
 
 type Category = { id: number; name: string }
@@ -86,6 +86,35 @@ export function ProductForm({
   const [isActive, setIsActive] = useState(initialProduct?.isActive ?? true)
   const [isFeatured, setIsFeatured] = useState(initialProduct?.isFeatured ?? false)
   const [tiers, setTiers] = useState<Tier[]>(initialTiers?.length ? initialTiers : [])
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+
+  async function handleFileUpload(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingIndex(index)
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("folder", "products")
+
+    try {
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Erro no upload")
+      }
+      updateImage(index, data.url)
+      toast.success("Imagem enviada para o Cloudflare R2 com sucesso!")
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao fazer upload da imagem.")
+    } finally {
+      setUploadingIndex(null)
+      e.target.value = ""
+    }
+  }
 
   function handleNameChange(value: string) {
     setName(value)
@@ -281,25 +310,74 @@ export function ProductForm({
       <FieldSeparator />
 
       <FieldSet>
-        <FieldLegend>Imagens</FieldLegend>
-        <FieldDescription>Use caminhos locais (ex: /products/produto.png) ou URLs.</FieldDescription>
-        <div className="flex flex-col gap-3">
+        <FieldLegend>Imagens do produto</FieldLegend>
+        <FieldDescription>
+          Envie fotos do seu computador diretamente para o <strong>Cloudflare R2</strong> ou cole URLs de imagens.
+        </FieldDescription>
+        <div className="flex flex-col gap-4">
           {images.map((image, index) => (
-            <div key={index} className="flex items-end gap-3">
-              <Field className="flex-1">
-                <FieldLabel>Imagem {index + 1}</FieldLabel>
-                <Input value={image} onChange={(e) => updateImage(index, e.target.value)} />
-              </Field>
-              {images.length > 1 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeImageField(index)}>
-                  <Trash2 />
-                </Button>
+            <div key={index} className="flex flex-col gap-2 rounded-xl border border-border p-3 sm:flex-row sm:items-center">
+              {image.trim().length > 0 ? (
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={image} alt={`Preview ${index + 1}`} className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-muted-foreground">
+                  <ImageIcon className="h-6 w-6" />
+                </div>
               )}
+
+              <Field className="flex-1">
+                <FieldLabel>URL da Imagem {index + 1}</FieldLabel>
+                <Input
+                  value={image}
+                  placeholder="https://pub-...r2.dev/products/... ou faça upload"
+                  onChange={(e) => updateImage(index, e.target.value)}
+                />
+              </Field>
+
+              <div className="flex items-center gap-2 self-end sm:self-auto sm:pt-6">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingIndex === index}
+                    onChange={(e) => handleFileUpload(index, e)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="pointer-events-none"
+                    disabled={uploadingIndex === index}
+                  >
+                    {uploadingIndex === index ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-1.5" />
+                        Upload R2
+                      </>
+                    )}
+                  </Button>
+                </label>
+
+                {images.length > 1 && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => removeImageField(index)}>
+                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
           <Button type="button" variant="outline" size="sm" className="w-fit" onClick={addImageField}>
             <Plus data-icon="inline-start" />
-            Adicionar imagem
+            Adicionar mais imagens
           </Button>
         </div>
       </FieldSet>
