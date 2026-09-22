@@ -8,7 +8,7 @@ import { PixPaymentPanel } from "@/components/pix-payment-panel"
 import { getInMemoryOrder } from "@/lib/orders/memory-store"
 
 export const metadata: Metadata = {
-  title: "Pagamento via PIX | Mimos Atacado",
+  title: "Pagamento via PIX",
   description: "Finalize o pagamento do seu pedido via PIX com aprovação instantânea.",
 }
 

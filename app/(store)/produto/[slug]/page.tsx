@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { slug } = await params
   const product = await getProductBySlug(slug)
   if (!product) return {}
-  const title = `${product.name} no Atacado para Revenda | Mimos Atacado`
+  const title = product.name
   const description =
     product.description ||
     `Compre ${product.name} no atacado com preços exclusivos de fábrica para revendedoras e lojistas.`
@@ -26,13 +26,13 @@ export async function generateMetadata({
       canonical: `/produto/${slug}`,
     },
     openGraph: {
-      title,
+      title: `Mimos Atacado | ${title}`,
       description,
       images: product.images[0] ? [product.images[0]] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: `Mimos Atacado | ${title}`,
       description,
       images: product.images[0] ? [product.images[0]] : [],
     },

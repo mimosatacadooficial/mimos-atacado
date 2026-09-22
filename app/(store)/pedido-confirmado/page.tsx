@@ -4,7 +4,7 @@ import { CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Pedido confirmado | Mimos Atacado",
+  title: "Pedido Confirmado",
 }
 
 export default async function OrderConfirmedPage({

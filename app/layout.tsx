@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_CONFIG.title,
-    template: '%s | Mimos Atacado',
+    template: 'Mimos Atacado | %s',
   },
   description: SITE_CONFIG.description,
   keywords: SEO_KEYWORDS,

@@ -3,7 +3,7 @@ import { ProductGrid } from "@/components/product-grid"
 import { searchProducts } from "@/lib/queries/products"
 
 export const metadata: Metadata = {
-  title: "Buscar produtos | Mimos Atacado",
+  title: "Buscar Produtos",
 }
 
 export default async function SearchPage({

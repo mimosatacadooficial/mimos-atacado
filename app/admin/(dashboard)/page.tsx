@@ -2,7 +2,7 @@ import { getDashboardMetrics } from "@/lib/queries/admin"
 import { DashboardView } from "@/components/admin/dashboard-view"
 
 export const metadata = {
-  title: "Visão Geral | Painel Mimos Atacado",
+  title: "Painel de Controle",
   description: "Métricas de vendas, pedidos e desempenho do catálogo no atacado.",
 }
 

@@ -2,7 +2,7 @@ import { getAdminProducts } from "@/lib/queries/admin"
 import { ProductsTableView } from "@/components/admin/products-table-view"
 
 export const metadata = {
-  title: "Produtos | Painel Mimos Atacado",
+  title: "Gerenciar Produtos",
   description: "Gerencie todos os produtos cadastrados para revenda no atacado.",
 }
 

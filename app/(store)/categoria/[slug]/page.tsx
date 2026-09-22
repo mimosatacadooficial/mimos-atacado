@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { slug } = await params
   const { category } = await getProductsByCategorySlug(slug)
   if (!category) return {}
-  const title = `${category.name} no Atacado para Revenda | Mimos Atacado`
+  const title = `${category.name} no Atacado para Revenda`
   const description =
     category.description ||
     `Compre ${category.name} no atacado direto da fábrica com descontos progressivos para revender com lucro.`
@@ -22,7 +22,7 @@ export async function generateMetadata({
       canonical: `/categoria/${slug}`,
     },
     openGraph: {
-      title,
+      title: `Mimos Atacado | ${title}`,
       description,
       images: category.imageUrl ? [category.imageUrl] : [],
     },

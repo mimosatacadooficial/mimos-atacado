@@ -3,7 +3,7 @@ import { ProductGrid } from "@/components/product-grid"
 import { getAllActiveProducts } from "@/lib/queries/products"
 
 export const metadata: Metadata = {
-  title: "Maquiagem e Cosméticos no Atacado para Revenda | Catálogo Completo",
+  title: "Catálogo Completo de Maquiagem & Cosméticos para Revenda",
   description:
     "Confira nosso catálogo completo de maquiagem, skincare, produtos para cabelo, unhas e perfumaria no atacado com preços de fábrica para revendedoras e lojistas.",
   alternates: {

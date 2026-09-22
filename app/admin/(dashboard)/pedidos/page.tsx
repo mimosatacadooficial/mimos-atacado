@@ -2,7 +2,7 @@ import { getAdminOrders } from "@/lib/queries/admin"
 import { OrdersView } from "@/components/admin/orders-view"
 
 export const metadata = {
-  title: "Pedidos | Painel Mimos Atacado",
+  title: "Gerenciar Pedidos",
   description: "Acompanhe e gerencie todos os pedidos da loja.",
 }
 

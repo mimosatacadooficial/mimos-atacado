@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { CheckoutForm } from "@/components/checkout-form"
 
 export const metadata: Metadata = {
-  title: "Finalizar compra | Mimos Atacado",
+  title: "Finalizar Compra",
   description: "Finalize sua compra no atacado com entrega para todo o Brasil.",
 }
 
