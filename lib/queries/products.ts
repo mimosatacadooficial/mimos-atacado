@@ -132,7 +132,12 @@ export async function searchProducts(query: string): Promise<ProductWithTiers[]>
     const rows = await db
       .select()
       .from(products)
-      .where(and(eq(products.isActive, true), ilike(products.name, `%${query}%`)))
+      .where(
+        and(
+          eq(products.isActive, true),
+          or(ilike(products.name, `%${query}%`), ilike(products.description, `%${query}%`))
+        )
+      )
       .orderBy(desc(products.createdAt))
     const withTiers = await attachTiers(rows)
     return withTiers.length > 0 ? (withTiers as ProductWithTiers[]) : fallbackResults

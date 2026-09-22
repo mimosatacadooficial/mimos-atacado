@@ -22,6 +22,18 @@ export async function generateMetadata({
   return {
     title,
     description,
+    keywords: [
+      product.name,
+      `${product.name} atacado`,
+      `${product.name} no atacado`,
+      `${product.name} para revenda`,
+      `${product.name} para revender`,
+      `${product.name} barato`,
+      product.categoryName ? `${product.categoryName} atacado` : "",
+      "maquiagem atacado",
+      "cosméticos para revenda",
+      "produtos de beleza no atacado",
+    ].filter(Boolean),
     alternates: {
       canonical: `/produto/${slug}`,
     },
@@ -45,19 +57,33 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!product) notFound()
 
+  const lowestPriceCents = product.priceTiers?.length
+    ? Math.min(...product.priceTiers.map((t) => t.priceCents))
+    : product.basePriceCents
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description,
+    description: product.description || `Compre ${product.name} no atacado para revenda com lucro na Mimos Atacado.`,
     image: product.images,
-    sku: product.sku,
+    sku: product.sku || `MIMOS-${product.id}`,
+    brand: {
+      "@type": "Brand",
+      name: "Mimos Atacado",
+    },
     offers: {
-      "@type": "Offer",
+      "@type": "AggregateOffer",
       priceCurrency: "BRL",
-      price: (product.basePriceCents / 100).toFixed(2),
+      lowPrice: (lowestPriceCents / 100).toFixed(2),
+      highPrice: (product.basePriceCents / 100).toFixed(2),
+      offerCount: product.priceTiers?.length || 1,
       availability:
         product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "Mimos Atacado",
+      },
     },
   }
 
