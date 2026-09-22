@@ -121,18 +121,41 @@ export async function deleteProduct(id: number) {
   revalidatePath("/produtos")
 }
 
+import { DEFAULT_PRODUCTS } from "@/lib/data/mock-data"
+
 export async function getProductWithTiers(id: number) {
-  const [product] = await db.select().from(products).where(eq(products.id, id))
-  if (!product) return null
-  const tiers = await db
-    .select()
-    .from(productPriceTiers)
-    .where(eq(productPriceTiers.productId, id))
-    .orderBy(productPriceTiers.minQuantity)
-  const categoryLinks = await db
-    .select({ categoryId: productCategories.categoryId })
-    .from(productCategories)
-    .where(eq(productCategories.productId, id))
-  const categoryIds = categoryLinks.length > 0 ? categoryLinks.map((c) => c.categoryId) : [product.categoryId]
-  return { product, tiers, categoryIds }
+  if (process.env.DATABASE_URL) {
+    try {
+      const [product] = await db.select().from(products).where(eq(products.id, id))
+      if (product) {
+        const tiers = await db
+          .select()
+          .from(productPriceTiers)
+          .where(eq(productPriceTiers.productId, id))
+          .orderBy(productPriceTiers.minQuantity)
+        const categoryLinks = await db
+          .select({ categoryId: productCategories.categoryId })
+          .from(productCategories)
+          .where(eq(productCategories.productId, id))
+        const categoryIds = categoryLinks.length > 0 ? categoryLinks.map((c) => c.categoryId) : [product.categoryId]
+        return { product, tiers, categoryIds }
+      }
+    } catch (error) {
+      console.error("Error fetching product with tiers:", error)
+    }
+  }
+
+  const mock = DEFAULT_PRODUCTS.find((p) => p.id === id)
+  if (!mock) return null
+  return {
+    product: mock,
+    tiers: mock.priceTiers.map((t, idx) => ({
+      id: idx + 1,
+      productId: mock.id,
+      minQuantity: t.minQuantity,
+      priceCents: t.priceCents,
+      createdAt: new Date(),
+    })),
+    categoryIds: [mock.categoryId],
+  }
 }

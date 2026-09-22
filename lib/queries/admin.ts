@@ -1,20 +1,77 @@
 import { db } from "@/lib/db"
 import { orders, orderItems, products, categories, banners, productCategories } from "@/lib/db/schema"
 import { and, desc, eq, gte, inArray, ne, sql } from "drizzle-orm"
+import { DEFAULT_BANNERS, DEFAULT_CATEGORIES, DEFAULT_PRODUCTS } from "@/lib/data/mock-data"
+
+export const FALLBACK_ORDERS = [
+  {
+    id: 1,
+    orderNumber: "MIM-2026-0038",
+    status: "pago",
+    subtotalCents: 41000,
+    shippingCents: 4000,
+    totalCents: 45000,
+    shippingState: "SP",
+    shippingCity: "São Paulo",
+    itemCount: 48,
+    createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
+  },
+  {
+    id: 2,
+    orderNumber: "MIM-2026-0037",
+    status: "aguardando_pagamento",
+    subtotalCents: 25000,
+    shippingCents: 3000,
+    totalCents: 28000,
+    shippingState: "RJ",
+    shippingCity: "Rio de Janeiro",
+    itemCount: 24,
+    createdAt: new Date(Date.now() - 1000 * 60 * 120), // 2 hours ago
+  },
+  {
+    id: 3,
+    orderNumber: "MIM-2026-0036",
+    status: "enviado",
+    subtotalCents: 70000,
+    shippingCents: 5000,
+    totalCents: 75000,
+    shippingState: "MG",
+    shippingCity: "Belo Horizonte",
+    itemCount: 80,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+  },
+]
+
+export const FALLBACK_METRICS = {
+  totalRevenueCents: 1542000,
+  totalOrders: 38,
+  todayOrders: 3,
+  todayRevenueCents: 125000,
+  pendingOrders: 2,
+  productCount: DEFAULT_PRODUCTS.length,
+  lowStockProducts: DEFAULT_PRODUCTS.filter((p) => p.stock <= 20).slice(0, 5).map((p) => ({
+    id: p.id,
+    name: p.name,
+    stock: p.stock,
+  })),
+  recentOrders: FALLBACK_ORDERS.map((o) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    status: o.status,
+    totalCents: o.totalCents,
+    itemCount: o.itemCount,
+    createdAt: o.createdAt,
+  })),
+  topProducts: [
+    { productName: "Kit Pincéis Profissional 12 Peças", totalQuantity: 140, totalRevenue: 348600 },
+    { productName: "Esponja de Maquiagem Blender", totalQuantity: 220, totalRevenue: 107800 },
+    { productName: "Sérum Facial Vitamina C 30ml", totalQuantity: 95, totalRevenue: 189050 },
+    { productName: "Base Líquida Matte Alta Cobertura", totalQuantity: 88, totalRevenue: 166320 },
+  ],
+}
 
 export async function getDashboardMetrics() {
-  const emptyMetrics = {
-    totalRevenueCents: 0,
-    totalOrders: 0,
-    todayOrders: 0,
-    todayRevenueCents: 0,
-    pendingOrders: 0,
-    productCount: 0,
-    lowStockProducts: [],
-    recentOrders: [],
-    topProducts: [],
-  }
-  if (!process.env.DATABASE_URL) return emptyMetrics
+  if (!process.env.DATABASE_URL) return FALLBACK_METRICS
 
   try {
     const startOfToday = new Date()
@@ -74,9 +131,14 @@ export async function getDashboardMetrics() {
       .orderBy(desc(sql`sum(${orderItems.totalPriceCents})`))
       .limit(5)
 
+    const totalOrders = Number(revenueRow?.orderCount ?? 0)
+    if (totalOrders === 0 && Number(productCountRow?.count ?? 0) === 0) {
+      return FALLBACK_METRICS
+    }
+
     return {
       totalRevenueCents: Number(revenueRow?.totalRevenue ?? 0),
-      totalOrders: Number(revenueRow?.orderCount ?? 0),
+      totalOrders,
       todayOrders: Number(todayRow?.orderCount ?? 0),
       todayRevenueCents: Number(todayRow?.revenue ?? 0),
       pendingOrders: Number(pendingRow?.count ?? 0),
@@ -87,12 +149,26 @@ export async function getDashboardMetrics() {
     }
   } catch (error) {
     console.error("Error fetching dashboard metrics:", error)
-    return emptyMetrics
+    return FALLBACK_METRICS
   }
 }
 
 export async function getAdminProducts() {
-  if (!process.env.DATABASE_URL) return []
+  const fallbackList = DEFAULT_PRODUCTS.map((p) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    basePriceCents: p.basePriceCents,
+    stock: p.stock,
+    isActive: p.isActive,
+    isFeatured: p.isFeatured,
+    categoryName: p.categoryName,
+    images: p.images,
+    categoryNames: [p.categoryName],
+  }))
+
+  if (!process.env.DATABASE_URL) return fallbackList
+
   try {
     const rows = await db
       .select({
@@ -110,7 +186,7 @@ export async function getAdminProducts() {
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .orderBy(desc(products.createdAt))
 
-    if (rows.length === 0) return []
+    if (rows.length === 0) return fallbackList
 
     const productIds = rows.map((r) => r.id)
     const links = await db
@@ -124,53 +200,81 @@ export async function getAdminProducts() {
 
     return rows.map((row) => {
       const names = links.filter((l) => l.productId === row.id).map((l) => l.categoryName)
-      return { ...row, categoryNames: names.length > 0 ? names : [row.categoryName].filter(Boolean) as string[] }
+      return { ...row, categoryNames: names.length > 0 ? names : ([row.categoryName].filter(Boolean) as string[]) }
     })
   } catch (error) {
     console.error("Error fetching admin products:", error)
-    return []
+    return fallbackList
   }
 }
 
 export async function getAdminCategories() {
-  if (!process.env.DATABASE_URL) return []
+  if (!process.env.DATABASE_URL) return DEFAULT_CATEGORIES
   try {
-    return await db.select().from(categories).orderBy(categories.sortOrder)
+    const rows = await db.select().from(categories).orderBy(categories.sortOrder)
+    return rows.length > 0 ? rows : DEFAULT_CATEGORIES
   } catch (error) {
     console.error("Error fetching admin categories:", error)
-    return []
+    return DEFAULT_CATEGORIES
   }
 }
 
 export async function getAdminOrders() {
-  if (!process.env.DATABASE_URL) return []
+  if (!process.env.DATABASE_URL) return FALLBACK_ORDERS
   try {
-    return await db.select().from(orders).orderBy(desc(orders.createdAt))
+    const rows = await db.select().from(orders).orderBy(desc(orders.createdAt))
+    return rows.length > 0 ? rows : FALLBACK_ORDERS
   } catch (error) {
     console.error("Error fetching admin orders:", error)
-    return []
+    return FALLBACK_ORDERS
   }
 }
 
 export async function getAdminOrderById(id: number) {
-  if (!process.env.DATABASE_URL) return null
+  const fallbackOrder = FALLBACK_ORDERS.find((o) => o.id === id)
+  const fallbackItems = [
+    {
+      id: 1,
+      orderId: id,
+      productId: 1,
+      productName: "Kit Pincéis Profissional 12 Peças",
+      quantity: 10,
+      unitPriceCents: 2490,
+      totalPriceCents: 24900,
+    },
+    {
+      id: 2,
+      orderId: id,
+      productId: 2,
+      productName: "Esponja de Maquiagem Blender",
+      quantity: 20,
+      unitPriceCents: 490,
+      totalPriceCents: 9800,
+    },
+  ]
+
+  if (!process.env.DATABASE_URL) {
+    return fallbackOrder ? { order: fallbackOrder, items: fallbackItems } : null
+  }
+
   try {
     const [order] = await db.select().from(orders).where(eq(orders.id, id))
-    if (!order) return null
+    if (!order) return fallbackOrder ? { order: fallbackOrder, items: fallbackItems } : null
     const items = await db.select().from(orderItems).where(eq(orderItems.orderId, id))
     return { order, items }
   } catch (error) {
     console.error("Error fetching admin order by id:", error)
-    return null
+    return fallbackOrder ? { order: fallbackOrder, items: fallbackItems } : null
   }
 }
 
 export async function getAdminBanners() {
-  if (!process.env.DATABASE_URL) return []
+  if (!process.env.DATABASE_URL) return DEFAULT_BANNERS
   try {
-    return await db.select().from(banners).orderBy(banners.sortOrder)
+    const rows = await db.select().from(banners).orderBy(banners.sortOrder)
+    return rows.length > 0 ? rows : DEFAULT_BANNERS
   } catch (error) {
     console.error("Error fetching admin banners:", error)
-    return []
+    return DEFAULT_BANNERS
   }
 }

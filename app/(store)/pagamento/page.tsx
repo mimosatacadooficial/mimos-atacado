@@ -17,7 +17,7 @@ export default async function PaymentPage({
   searchParams: Promise<{ numero?: string }>
 }) {
   const { numero } = await searchParams
-  if (!numero) redirect("/carrinho")
+  if (!numero || !process.env.DATABASE_URL) redirect("/carrinho")
 
   const [order] = await db.select().from(orders).where(eq(orders.orderNumber, numero))
   if (!order || !order.pixCode) redirect("/carrinho")
