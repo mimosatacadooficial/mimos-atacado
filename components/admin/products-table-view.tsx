@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+
 import Link from "next/link"
 import Image from "next/image"
 import { formatCentsToBRL } from "@/lib/format"
@@ -29,11 +30,20 @@ interface ProductsTableViewProps {
 }
 
 export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
+  const [products, setProducts] = useState(initialProducts)
   const [search, setSearch] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<"todos" | "ativos" | "destaques">("todos")
 
+  useEffect(() => {
+    setProducts(initialProducts)
+  }, [initialProducts])
+
+  function handleProductDeleted(deletedId: number) {
+    setProducts((prev) => prev.filter((p) => p.id !== deletedId))
+  }
+
   const filteredProducts = useMemo(() => {
-    return initialProducts.filter((p) => {
+    return products.filter((p) => {
       const matchesSearch =
         search === "" ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -46,7 +56,7 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
 
       return matchesSearch && matchesStatus
     })
-  }, [initialProducts, search, selectedFilter])
+  }, [products, search, selectedFilter])
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,9 +67,10 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
             Produtos
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {initialProducts.length} produtos cadastrados no catálogo para revenda.
+            {products.length} produtos cadastrados no catálogo para revenda.
           </p>
         </div>
+
         <Button render={<Link href="/admin/produtos/novo" />} nativeButton={false}>
           <Plus data-icon="inline-start" />
           Novo produto
@@ -88,7 +99,7 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Todos ({initialProducts.length})
+            Todos ({products.length})
           </button>
           <button
             type="button"
@@ -99,7 +110,7 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Ativos ({initialProducts.filter((p) => p.isActive).length})
+            Ativos ({products.filter((p) => p.isActive).length})
           </button>
           <button
             type="button"
@@ -110,7 +121,7 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Destaques ({initialProducts.filter((p) => p.isFeatured).length})
+            Destaques ({products.filter((p) => p.isFeatured).length})
           </button>
         </div>
       </div>
@@ -194,7 +205,11 @@ export function ProductsTableView({ initialProducts }: ProductsTableViewProps) {
                       >
                         <Pencil className="size-4" />
                       </Button>
-                      <DeleteProductButton productId={product.id} productName={product.name} />
+                      <DeleteProductButton
+                        productId={product.id}
+                        productName={product.name}
+                        onDeleted={handleProductDeleted}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

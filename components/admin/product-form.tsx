@@ -184,10 +184,11 @@ export function ProductForm({
         } else {
           await createProduct(input)
         }
-        toast.success(initialProduct ? "Produto atualizado." : "Produto criado.")
+        toast.success(initialProduct ? "Produto atualizado com sucesso." : "Produto criado com sucesso.")
         router.push("/admin/produtos")
-      } catch (error) {
-        toast.error("Não foi possível salvar o produto.")
+        router.refresh()
+      } catch (error: any) {
+        toast.error(error?.message || "Não foi possível salvar o produto.")
       }
     })
   }

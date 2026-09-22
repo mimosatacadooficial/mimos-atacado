@@ -1,7 +1,13 @@
-import { db } from "@/lib/db"
+import { db, isDatabaseConfigured } from "@/lib/db"
 import { orders, orderItems, products, categories, banners, productCategories } from "@/lib/db/schema"
 import { and, desc, eq, gte, inArray, ne, sql } from "drizzle-orm"
 import { DEFAULT_BANNERS, DEFAULT_CATEGORIES, DEFAULT_PRODUCTS } from "@/lib/data/mock-data"
+import {
+  getAdminProducts as getCatalogAdminProducts,
+  getAdminCategories as getCatalogAdminCategories,
+  getCatalog,
+} from "@/lib/catalog"
+
 
 export interface AdminOrder {
   id: number
@@ -131,7 +137,22 @@ export const FALLBACK_METRICS: DashboardMetrics = {
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  if (!process.env.DATABASE_URL) return FALLBACK_METRICS
+  if (!isDatabaseConfigured()) {
+
+    try {
+      const catalog = await getCatalog()
+      return {
+        ...FALLBACK_METRICS,
+        productCount: catalog.products.length,
+        lowStockProducts: catalog.products
+          .filter((p) => p.stock <= 20)
+          .map((p) => ({ id: p.id, name: p.name, stock: p.stock })),
+      }
+    } catch {
+      return FALLBACK_METRICS
+    }
+  }
+
 
   try {
     const startOfToday = new Date()
@@ -298,73 +319,16 @@ function calculateOrderPeriods(orderList: (typeof orders.$inferSelect)[]): Dashb
 }
 
 export async function getAdminProducts() {
-  const fallbackList = DEFAULT_PRODUCTS.map((p) => ({
-    id: p.id,
-    name: p.name,
-    slug: p.slug,
-    basePriceCents: p.basePriceCents,
-    stock: p.stock,
-    isActive: p.isActive,
-    isFeatured: p.isFeatured,
-    categoryName: p.categoryName,
-    images: p.images,
-    categoryNames: [p.categoryName],
-  }))
-
-  if (!process.env.DATABASE_URL) return fallbackList
-
-  try {
-    const rows = await db
-      .select({
-        id: products.id,
-        name: products.name,
-        slug: products.slug,
-        basePriceCents: products.basePriceCents,
-        stock: products.stock,
-        isActive: products.isActive,
-        isFeatured: products.isFeatured,
-        categoryName: categories.name,
-        images: products.images,
-      })
-      .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .orderBy(desc(products.createdAt))
-
-    if (rows.length === 0) return fallbackList
-
-    const productIds = rows.map((r) => r.id)
-    const links = await db
-      .select({
-        productId: productCategories.productId,
-        categoryName: categories.name,
-      })
-      .from(productCategories)
-      .innerJoin(categories, eq(productCategories.categoryId, categories.id))
-      .where(inArray(productCategories.productId, productIds))
-
-    return rows.map((row) => {
-      const names = links.filter((l) => l.productId === row.id).map((l) => l.categoryName)
-      return { ...row, categoryNames: names.length > 0 ? names : ([row.categoryName].filter(Boolean) as string[]) }
-    })
-  } catch (error) {
-    console.error("Error fetching admin products:", error)
-    return fallbackList
-  }
+  return getCatalogAdminProducts()
 }
 
 export async function getAdminCategories() {
-  if (!process.env.DATABASE_URL) return DEFAULT_CATEGORIES
-  try {
-    const rows = await db.select().from(categories).orderBy(categories.sortOrder)
-    return rows.length > 0 ? rows : DEFAULT_CATEGORIES
-  } catch (error) {
-    console.error("Error fetching admin categories:", error)
-    return DEFAULT_CATEGORIES
-  }
+  return getCatalogAdminCategories()
 }
 
+
 export async function getAdminOrders() {
-  if (!process.env.DATABASE_URL) return FALLBACK_ORDERS
+  if (!isDatabaseConfigured()) return FALLBACK_ORDERS
   try {
     const rows = await db.select().from(orders).orderBy(desc(orders.createdAt))
     return rows.length > 0 ? rows : FALLBACK_ORDERS
@@ -376,7 +340,7 @@ export async function getAdminOrders() {
 
 export async function getAdminOrderById(id: number) {
   const fallbackOrder = FALLBACK_ORDERS.find((o) => o.id === id)
-  if (!process.env.DATABASE_URL) {
+  if (!isDatabaseConfigured()) {
     return fallbackOrder ? { order: fallbackOrder, items: [] } : null
   }
 
@@ -392,7 +356,7 @@ export async function getAdminOrderById(id: number) {
 }
 
 export async function getAdminBanners() {
-  if (!process.env.DATABASE_URL) return DEFAULT_BANNERS
+  if (!isDatabaseConfigured()) return DEFAULT_BANNERS
   try {
     const rows = await db.select().from(banners).orderBy(banners.sortOrder)
     return rows.length > 0 ? rows : DEFAULT_BANNERS
@@ -401,3 +365,4 @@ export async function getAdminBanners() {
     return DEFAULT_BANNERS
   }
 }
+
