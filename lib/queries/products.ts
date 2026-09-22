@@ -35,67 +35,103 @@ async function attachTiers(rows: (typeof products.$inferSelect)[]) {
 }
 
 export async function getFeaturedProducts(limit = 8) {
-  const rows = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.isActive, true), eq(products.isFeatured, true)))
-    .orderBy(desc(products.createdAt))
-    .limit(limit)
-  return attachTiers(rows)
+  if (!process.env.DATABASE_URL) return []
+  try {
+    const rows = await db
+      .select()
+      .from(products)
+      .where(and(eq(products.isActive, true), eq(products.isFeatured, true)))
+      .orderBy(desc(products.createdAt))
+      .limit(limit)
+    return attachTiers(rows)
+  } catch (error) {
+    console.error("Error fetching featured products:", error)
+    return []
+  }
 }
 
 export async function getAllActiveProducts() {
-  const rows = await db
-    .select()
-    .from(products)
-    .where(eq(products.isActive, true))
-    .orderBy(desc(products.createdAt))
-  return attachTiers(rows)
+  if (!process.env.DATABASE_URL) return []
+  try {
+    const rows = await db
+      .select()
+      .from(products)
+      .where(eq(products.isActive, true))
+      .orderBy(desc(products.createdAt))
+    return attachTiers(rows)
+  } catch (error) {
+    console.error("Error fetching active products:", error)
+    return []
+  }
 }
 
 export async function getProductsByCategorySlug(slug: string) {
-  const [category] = await db.select().from(categories).where(eq(categories.slug, slug))
-  if (!category) return { category: null, products: [] as ProductWithTiers[] }
+  if (!process.env.DATABASE_URL) return { category: null, products: [] as ProductWithTiers[] }
+  try {
+    const [category] = await db.select().from(categories).where(eq(categories.slug, slug))
+    if (!category) return { category: null, products: [] as ProductWithTiers[] }
 
-  const links = await db
-    .select({ productId: productCategories.productId })
-    .from(productCategories)
-    .where(eq(productCategories.categoryId, category.id))
-  const linkedIds = links.map((l) => l.productId)
+    const links = await db
+      .select({ productId: productCategories.productId })
+      .from(productCategories)
+      .where(eq(productCategories.categoryId, category.id))
+    const linkedIds = links.map((l) => l.productId)
 
-  const categoryMatch =
-    linkedIds.length > 0
-      ? or(eq(products.categoryId, category.id), inArray(products.id, linkedIds))
-      : eq(products.categoryId, category.id)
+    const categoryMatch =
+      linkedIds.length > 0
+        ? or(eq(products.categoryId, category.id), inArray(products.id, linkedIds))
+        : eq(products.categoryId, category.id)
 
-  const rows = await db
-    .select()
-    .from(products)
-    .where(and(categoryMatch, eq(products.isActive, true)))
-    .orderBy(desc(products.createdAt))
-  const withTiers = await attachTiers(rows)
-  return { category, products: withTiers }
+    const rows = await db
+      .select()
+      .from(products)
+      .where(and(categoryMatch, eq(products.isActive, true)))
+      .orderBy(desc(products.createdAt))
+    const withTiers = await attachTiers(rows)
+    return { category, products: withTiers }
+  } catch (error) {
+    console.error("Error fetching products by category:", error)
+    return { category: null, products: [] as ProductWithTiers[] }
+  }
 }
 
 export async function searchProducts(query: string) {
-  const rows = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.isActive, true), ilike(products.name, `%${query}%`)))
-    .orderBy(desc(products.createdAt))
-  return attachTiers(rows)
+  if (!process.env.DATABASE_URL) return []
+  try {
+    const rows = await db
+      .select()
+      .from(products)
+      .where(and(eq(products.isActive, true), ilike(products.name, `%${query}%`)))
+      .orderBy(desc(products.createdAt))
+    return attachTiers(rows)
+  } catch (error) {
+    console.error("Error searching products:", error)
+    return []
+  }
 }
 
 export async function getProductBySlug(slug: string) {
-  const [product] = await db.select().from(products).where(eq(products.slug, slug))
-  if (!product) return null
-  const [withTiers] = await attachTiers([product])
-  const [category] = await db.select().from(categories).where(eq(categories.id, product.categoryId))
-  return { ...withTiers, categoryName: category?.name, categorySlug: category?.slug }
+  if (!process.env.DATABASE_URL) return null
+  try {
+    const [product] = await db.select().from(products).where(eq(products.slug, slug))
+    if (!product) return null
+    const [withTiers] = await attachTiers([product])
+    const [category] = await db.select().from(categories).where(eq(categories.id, product.categoryId))
+    return { ...withTiers, categoryName: category?.name, categorySlug: category?.slug }
+  } catch (error) {
+    console.error("Error fetching product by slug:", error)
+    return null
+  }
 }
 
 export async function getAllCategories() {
-  return db.select().from(categories).orderBy(asc(categories.sortOrder))
+  if (!process.env.DATABASE_URL) return []
+  try {
+    return await db.select().from(categories).orderBy(asc(categories.sortOrder))
+  } catch (error) {
+    console.error("Error fetching categories:", error)
+    return []
+  }
 }
 
 /** Returns the applicable unit price in cents for a given quantity, using the highest tier threshold met. */

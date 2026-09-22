@@ -1,7 +1,8 @@
 {
-  "name": "my-project",
+  "name": "mimos-atacado",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -37,9 +38,14 @@
     "tailwindcss": "^4.3.3",
     "typescript": "5.7.3"
   },
+  "overrides": {
+    "hono": "4.12.25"
+  },
   "pnpm": {
-    "overrides": {
-      "hono": "4.12.25"
-    }
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild",
+      "msw"
+    ]
   }
 }

@@ -18,7 +18,8 @@ const STATUS_LABELS: Record<string, string> = {
 export function OrderStatusSelect({ orderId, status }: { orderId: number; status: string }) {
   const [isPending, startTransition] = useTransition()
 
-  function handleChange(value: string) {
+  function handleChange(value: string | null) {
+    if (!value) return
     startTransition(async () => {
       await updateOrderStatus(orderId, value)
       toast.success("Status atualizado.")

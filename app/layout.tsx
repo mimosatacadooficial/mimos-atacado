@@ -40,6 +40,8 @@ export const metadata: Metadata = {
   },
 }
 
+export const dynamic = 'force-dynamic'
+
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#fdf1f5',
