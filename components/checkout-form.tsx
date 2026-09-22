@@ -144,8 +144,8 @@ export function CheckoutForm() {
     return Object.keys(next).length === 0
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault()
     setSubmitError(null)
     if (!items.length) {
       setSubmitError("Seu carrinho está vazio.")
@@ -175,7 +175,15 @@ export function CheckoutForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+    <div
+      className="flex flex-col gap-8"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && (e.target as HTMLElement)?.tagName === "INPUT") {
+          e.preventDefault()
+          handleSubmit()
+        }
+      }}
+    >
       <FieldSet>
         <FieldLegend>Dados de contato</FieldLegend>
         <FieldDescription>
@@ -189,7 +197,9 @@ export function CheckoutForm() {
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
               aria-invalid={!!errors.name}
-              autoComplete="name"
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
             />
             <FieldError>{errors.name}</FieldError>
           </Field>
@@ -202,7 +212,9 @@ export function CheckoutForm() {
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 aria-invalid={!!errors.email}
-                autoComplete="email"
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.email}</FieldError>
             </Field>
@@ -214,7 +226,9 @@ export function CheckoutForm() {
                 onChange={(e) => update("phone", formatPhone(e.target.value))}
                 aria-invalid={!!errors.phone}
                 placeholder="(00) 00000-0000"
-                autoComplete="tel"
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.phone}</FieldError>
             </Field>
@@ -228,6 +242,9 @@ export function CheckoutForm() {
               aria-invalid={!!errors.cpf}
               placeholder="000.000.000-00"
               inputMode="numeric"
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
             />
             <FieldError>{errors.cpf}</FieldError>
           </Field>
@@ -246,7 +263,9 @@ export function CheckoutForm() {
               aria-invalid={!!errors.cep || cepNotFound}
               placeholder="00000-000"
               inputMode="numeric"
-              autoComplete="postal-code"
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
             />
             <FieldDescription>
               {cepLoading
@@ -265,6 +284,9 @@ export function CheckoutForm() {
                 value={form.street}
                 onChange={(e) => update("street", e.target.value)}
                 aria-invalid={!!errors.street}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.street}</FieldError>
             </Field>
@@ -276,6 +298,9 @@ export function CheckoutForm() {
                 value={form.number}
                 onChange={(e) => update("number", e.target.value)}
                 aria-invalid={!!errors.number}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.number}</FieldError>
             </Field>
@@ -287,6 +312,9 @@ export function CheckoutForm() {
                 id="complement"
                 value={form.complement}
                 onChange={(e) => update("complement", e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
             </Field>
             <Field>
@@ -295,6 +323,9 @@ export function CheckoutForm() {
                 id="neighborhood"
                 value={form.neighborhood}
                 onChange={(e) => update("neighborhood", e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
             </Field>
           </div>
@@ -306,6 +337,9 @@ export function CheckoutForm() {
                 value={form.city}
                 onChange={(e) => update("city", e.target.value)}
                 aria-invalid={!!errors.city}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.city}</FieldError>
             </Field>
@@ -316,6 +350,9 @@ export function CheckoutForm() {
                 value={form.state}
                 onChange={(e) => update("state", e.target.value.toUpperCase().slice(0, 2))}
                 aria-invalid={!!errors.state}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               <FieldError>{errors.state}</FieldError>
             </Field>
@@ -344,7 +381,13 @@ export function CheckoutForm() {
         </div>
       </div>
 
-      <Button type="submit" size="lg" className="glow-sm" disabled={isPending}>
+      <Button
+        type="button"
+        onClick={() => handleSubmit()}
+        size="lg"
+        className="glow-sm"
+        disabled={isPending}
+      >
         {isPending ? (
           <>
             <Loader2 className="animate-spin" data-icon="inline-start" />
@@ -358,6 +401,6 @@ export function CheckoutForm() {
         Você receberá um código PIX para pagamento imediato. Seus dados pessoais não são armazenados em
         nosso banco de dados.
       </p>
-    </form>
+    </div>
   )
 }
