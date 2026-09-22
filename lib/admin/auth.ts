@@ -1,6 +1,6 @@
 // Senha padrão do painel admin. Você pode trocar definindo a variável de
 // ambiente ADMIN_PASSWORD nas configurações do projeto.
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mimos2024"
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Predestinado8221$"
 const COOKIE_NAME = "mimos_admin_session"
 
 // Usamos Web Crypto (disponível no Edge Runtime) em vez do módulo "crypto"
