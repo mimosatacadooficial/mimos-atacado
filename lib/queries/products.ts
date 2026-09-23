@@ -125,10 +125,19 @@ export async function searchProducts(query: string): Promise<ProductWithTiers[]>
   }
 }
 
+const SLUG_ALIASES: Record<string, string> = {
+  "base-liquida-matte": "kit-de-maquiagem-38-itens-com-acessorios-extras-para-revender",
+  "paleta-sombras-12-cores": "kit-de-maquiagem-40-itens-para-revender",
+}
+
 export async function getProductBySlug(slug: string): Promise<ProductWithTiers | null> {
   try {
+    const cleanSlug = slug.trim().toLowerCase()
+    const targetSlug = SLUG_ALIASES[cleanSlug] || cleanSlug
     const catalog = await getCatalog()
-    const found = catalog.products.find((p) => p.slug === slug)
+    const found =
+      catalog.products.find((p) => p.slug.toLowerCase() === targetSlug) ||
+      catalog.products.find((p) => p.slug.toLowerCase() === cleanSlug)
     if (!found) return null
     return mapCatalogProductToStore(found)
   } catch (error) {

@@ -35,9 +35,6 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  alternates: {
-    canonical: '/',
-  },
   robots: {
     index: true,
     follow: true,
@@ -123,11 +120,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${_outfit.variable} ${_inter.variable} bg-background`}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/icon-96x96.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
         <JsonLd />
       </head>
       <body className="font-sans antialiased">

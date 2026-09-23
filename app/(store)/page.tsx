@@ -1,9 +1,16 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { HeroBanner } from "@/components/hero-banner"
 import { ProductCard } from "@/components/product-card"
 import { getActiveBanners } from "@/lib/queries/banners"
 import { getAllActiveProducts, getFeaturedProducts } from "@/lib/queries/products"
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+}
 
 export default async function HomePage() {
   const [banners, allProducts, featuredProducts] = await Promise.all([

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProductGrid } from "@/components/product-grid"
 import { getProductsByCategorySlug } from "@/lib/queries/products"
+import { SITE_URL } from "@/lib/seo"
 
 export async function generateMetadata({
   params,
@@ -35,8 +36,30 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   if (!category) notFound()
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Início",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: category.name,
+        item: `${SITE_URL}/categoria/${category.slug}`,
+      },
+    ],
+  }
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:px-6 md:py-10">
+      {/* eslint-disable-next-line react/no-danger */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
       <div>
         <h1 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
           {category.name}

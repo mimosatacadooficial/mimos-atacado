@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react"
 import { AddToCartForm } from "@/components/add-to-cart-form"
 import { getProductBySlug } from "@/lib/queries/products"
 import { formatCentsToBRL } from "@/lib/format"
+import { SITE_URL } from "@/lib/seo"
 
 export async function generateMetadata({
   params,
@@ -16,6 +17,7 @@ export async function generateMetadata({
   const product = await getProductBySlug(slug)
   if (!product) return {}
   const title = product.name
+  const isKit = product.name.toLowerCase().includes("kit")
   const description =
     product.description ||
     `Compre ${product.name} no atacado com preços exclusivos de fábrica para revendedoras e lojistas.`
@@ -29,17 +31,23 @@ export async function generateMetadata({
       `${product.name} para revenda`,
       `${product.name} para revender`,
       `${product.name} barato`,
+      isKit ? "kit de maquiagem atacado" : "",
+      isKit ? "kit maquiagem revenda" : "",
+      isKit ? "kit maquiagem para revender" : "",
+      isKit ? "kit maquiagem atacado barato" : "",
+      isKit ? "kit para revendedora de maquiagem" : "",
       product.categoryName ? `${product.categoryName} atacado` : "",
       "maquiagem atacado",
       "cosméticos para revenda",
       "produtos de beleza no atacado",
     ].filter(Boolean),
     alternates: {
-      canonical: `/produto/${slug}`,
+      canonical: `/produto/${product.slug}`,
     },
     openGraph: {
       title: `Mimos Atacado | ${title}`,
       description,
+      url: `${SITE_URL}/produto/${product.slug}`,
       images: product.images[0] ? [product.images[0]] : [],
     },
     twitter: {
@@ -61,31 +69,65 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     ? Math.min(...product.priceTiers.map((t) => t.priceCents))
     : product.basePriceCents
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description || `Compre ${product.name} no atacado para revenda com lucro na Mimos Atacado.`,
-    image: product.images,
-    sku: product.sku || `MIMOS-${product.id}`,
-    brand: {
-      "@type": "Brand",
-      name: "Mimos Atacado",
+  const productUrl = `${SITE_URL}/produto/${product.slug}`
+
+  const breadcrumbsList = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Início",
+      item: SITE_URL,
     },
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "BRL",
-      lowPrice: (lowestPriceCents / 100).toFixed(2),
-      highPrice: (product.basePriceCents / 100).toFixed(2),
-      offerCount: product.priceTiers?.length || 1,
-      availability:
-        product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      seller: {
-        "@type": "Organization",
+  ]
+
+  if (product.categorySlug) {
+    breadcrumbsList.push({
+      "@type": "ListItem",
+      position: 2,
+      name: product.categoryName || "Categoria",
+      item: `${SITE_URL}/categoria/${product.categorySlug}`,
+    })
+  }
+
+  breadcrumbsList.push({
+    "@type": "ListItem",
+    position: breadcrumbsList.length + 1,
+    name: product.name,
+    item: productUrl,
+  })
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbsList,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: product.description || `Compre ${product.name} no atacado para revenda com lucro na Mimos Atacado.`,
+      image: product.images,
+      sku: product.sku || `MIMOS-${product.id}`,
+      brand: {
+        "@type": "Brand",
         name: "Mimos Atacado",
       },
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "BRL",
+        lowPrice: (lowestPriceCents / 100).toFixed(2),
+        highPrice: (product.basePriceCents / 100).toFixed(2),
+        offerCount: product.priceTiers?.length || 1,
+        availability:
+          product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        seller: {
+          "@type": "Organization",
+          name: "Mimos Atacado",
+        },
+      },
     },
-  }
+  ]
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
