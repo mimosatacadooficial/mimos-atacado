@@ -127,14 +127,17 @@ export function isPaidOrder(status: string): boolean {
  */
 export function calculatePeriodMetrics(
   orderList: StoredOrder[],
-  startDate: Date | null,
-  endDate: Date | null,
-  grouping: "hours" | "days" | "months"
+  startDate: Date | string | number | null = null,
+  endDate: Date | string | number | null = null,
+  grouping: "hours" | "days" | "months" = "days"
 ): PeriodMetrics {
+  const startTs = startDate ? new Date(startDate).getTime() : null
+  const endTs = endDate ? new Date(endDate).getTime() : null
+
   const filtered = (orderList || []).filter((o) => {
     const oTime = new Date(o.createdAt).getTime()
-    if (startDate && oTime < startDate.getTime()) return false
-    if (endDate && oTime > endDate.getTime()) return false
+    if (startTs !== null && !isNaN(startTs) && oTime < startTs) return false
+    if (endTs !== null && !isNaN(endTs) && oTime > endTs) return false
     return true
   })
 
@@ -183,8 +186,9 @@ export function calculatePeriodMetrics(
     })
   } else if (grouping === "days") {
     const refEnd = endDate ? new Date(endDate) : new Date()
-    const daysCount = startDate
-      ? Math.max(Math.min(Math.ceil((refEnd.getTime() - startDate.getTime()) / (24 * 3600 * 1000)), 31), 7)
+    const startObj = startDate ? new Date(startDate) : null
+    const daysCount = startObj && !isNaN(startObj.getTime())
+      ? Math.max(Math.min(Math.ceil((refEnd.getTime() - startObj.getTime()) / (24 * 3600 * 1000)), 31), 7)
       : 7
 
     const dayPoints: ChartPoint[] = []
