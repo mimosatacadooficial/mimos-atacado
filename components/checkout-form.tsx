@@ -55,21 +55,22 @@ function formatPhone(value: string) {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
 }
 
-function formatCpf(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 11)
-  const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)].filter(Boolean)
-  let result = parts.join(".")
-  if (digits.length > 9) result += `-${digits.slice(9)}`
-  return result
-}
-
-function formatCnpj(value: string) {
+function formatCpfCnpj(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 14)
-  if (digits.length <= 2) return digits
-  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`
-  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
-  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
-  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`
+  if (digits.length <= 11) {
+    const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)].filter(Boolean)
+    let result = parts.join(".")
+    if (digits.length > 9) result += `-${digits.slice(9)}`
+    return result
+  }
+  let result = `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}`
+  if (digits.length > 8) {
+    result += `/${digits.slice(8, 12)}`
+  }
+  if (digits.length > 12) {
+    result += `-${digits.slice(12, 14)}`
+  }
+  return result
 }
 
 function formatCep(value: string) {
@@ -81,7 +82,6 @@ function formatCep(value: string) {
 export function CheckoutForm() {
   const { items, subtotalCents, clearCart } = useCart()
   const router = useRouter()
-  const [docType, setDocType] = useState<"cpf" | "cnpj">("cpf")
   const [form, setForm] = useState<FormState>(initialState)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [cepLoading, setCepLoading] = useState(false)
@@ -100,27 +100,7 @@ export function CheckoutForm() {
   }
 
   function handleDocumentChange(val: string) {
-    const rawDigits = val.replace(/\D/g, "")
-    if (rawDigits.length > 11 && docType === "cpf") {
-      setDocType("cnpj")
-      update("cpf", formatCnpj(rawDigits))
-      return
-    }
-    if (docType === "cnpj") {
-      update("cpf", formatCnpj(rawDigits))
-    } else {
-      update("cpf", formatCpf(rawDigits))
-    }
-  }
-
-  function handleDocTypeChange(type: "cpf" | "cnpj") {
-    setDocType(type)
-    const rawDigits = form.cpf.replace(/\D/g, "")
-    if (type === "cnpj") {
-      update("cpf", formatCnpj(rawDigits))
-    } else {
-      update("cpf", formatCpf(rawDigits))
-    }
+    update("cpf", formatCpfCnpj(val))
   }
 
   async function lookupCep(digits: string) {
@@ -172,12 +152,8 @@ export function CheckoutForm() {
     const docDigits = form.cpf.replace(/\D/g, "")
     if (!docDigits) {
       next.cpf = "Informe seu CPF ou CNPJ."
-    } else if (docType === "cpf" && docDigits.length !== 11) {
-      next.cpf = "Informe um CPF válido (11 dígitos)."
-    } else if (docType === "cnpj" && docDigits.length !== 14) {
-      next.cpf = "Informe um CNPJ válido (14 dígitos)."
     } else if (docDigits.length !== 11 && docDigits.length !== 14) {
-      next.cpf = "Informe um CPF ou CNPJ válido."
+      next.cpf = "Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido."
     }
     if (form.cep.replace(/\D/g, "").length !== 8) next.cep = "Informe um CEP válido."
     if (!form.street.trim()) next.street = "Informe o endereço."
@@ -277,42 +253,14 @@ export function CheckoutForm() {
               <FieldError>{errors.phone}</FieldError>
             </Field>
           </div>
-          <Field data-invalid={!!errors.cpf} className="sm:max-w-sm">
-            <div className="flex items-center justify-between gap-2">
-              <FieldLabel htmlFor="cpf">CPF / CNPJ</FieldLabel>
-              <div className="inline-flex rounded-lg border border-border/80 bg-secondary/40 p-0.5 text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => handleDocTypeChange("cpf")}
-                  className={cn(
-                    "rounded-md px-2.5 py-0.5 text-xs font-medium transition-all cursor-pointer",
-                    docType === "cpf"
-                      ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  CPF
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDocTypeChange("cnpj")}
-                  className={cn(
-                    "rounded-md px-2.5 py-0.5 text-xs font-medium transition-all cursor-pointer",
-                    docType === "cnpj"
-                      ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  CNPJ
-                </button>
-              </div>
-            </div>
+          <Field data-invalid={!!errors.cpf} className="sm:max-w-xs">
+            <FieldLabel htmlFor="cpf">CPF / CNPJ</FieldLabel>
             <Input
               id="cpf"
               value={form.cpf}
               onChange={(e) => handleDocumentChange(e.target.value)}
               aria-invalid={!!errors.cpf}
-              placeholder={docType === "cnpj" ? "00.000.000/0000-00" : "000.000.000-00"}
+              placeholder="000.000.000-00"
               inputMode="numeric"
               autoComplete="off"
               data-lpignore="true"
