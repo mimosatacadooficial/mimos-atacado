@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { orders } from "@/lib/db/schema"
 import { PixPaymentPanel } from "@/components/pix-payment-panel"
 import { getInMemoryOrder } from "@/lib/orders/memory-store"
+import { getPersistentOrderByNumber } from "@/lib/orders/store"
 
 export const metadata: Metadata = {
   title: "Pagamento via PIX",
@@ -39,6 +40,23 @@ export default async function PaymentPage({
 
   if (!orderData) {
     orderData = getInMemoryOrder(numero)
+  }
+
+  if (!orderData) {
+    try {
+      const r2Order = await getPersistentOrderByNumber(numero)
+      if (r2Order) {
+        orderData = {
+          orderNumber: r2Order.orderNumber,
+          pixCode: r2Order.pixCode,
+          status: r2Order.status,
+          totalCents: r2Order.totalCents,
+          pixExpiresAt: r2Order.pixExpiresAt ? new Date(r2Order.pixExpiresAt) : null,
+        }
+      }
+    } catch (err) {
+      console.warn("R2 fetch error on payment page:", err)
+    }
   }
 
   if (!orderData || !orderData.pixCode) redirect("/carrinho")

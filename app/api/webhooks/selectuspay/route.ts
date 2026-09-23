@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { verifyWebhookSignature } from "@/lib/selectuspay"
 import { updateInMemoryOrderStatus } from "@/lib/orders/memory-store"
+import { updatePersistentOrderByPixId } from "@/lib/orders/store"
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,7 +47,20 @@ export async function POST(req: NextRequest) {
     }
 
     if (mappedStatus) {
-      // 1. Atualiza no banco de dados se conectado
+      // 1. Atualiza permanentemente no Cloudflare R2
+      try {
+        const updatedR2 = await updatePersistentOrderByPixId(String(transactionId), mappedStatus)
+        if (updatedR2) {
+          updateInMemoryOrderStatus(updatedR2.orderNumber, mappedStatus)
+          revalidatePath("/admin/pedidos")
+          revalidatePath(`/admin/pedidos/${updatedR2.id}`)
+          revalidatePath("/admin")
+        }
+      } catch (r2Err) {
+        console.warn("R2 update error in webhook:", r2Err)
+      }
+
+      // 2. Atualiza no banco de dados se conectado
       if (process.env.DATABASE_URL) {
         try {
           const [updated] = await db

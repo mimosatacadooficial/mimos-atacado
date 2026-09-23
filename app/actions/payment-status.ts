@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { orders } from "@/lib/db/schema"
 import { revalidatePath } from "next/cache"
 import { getInMemoryOrder } from "@/lib/orders/memory-store"
+import { getPersistentOrderByNumber, updatePersistentOrderStatus } from "@/lib/orders/store"
 
 const STATUS_MAP: Record<string, string> = {
   pending: "aguardando_pagamento",
@@ -42,6 +43,14 @@ export async function checkOrderPaymentStatus(orderNumber: string): Promise<Paym
   }
 
   if (!order) {
+    try {
+      order = await getPersistentOrderByNumber(orderNumber)
+    } catch (err) {
+      console.warn("R2 query error in checkOrderPaymentStatus:", err)
+    }
+  }
+
+  if (!order) {
     return { success: false, error: "Pedido não encontrado." }
   }
 
@@ -52,17 +61,27 @@ export async function checkOrderPaymentStatus(orderNumber: string): Promise<Paym
 
   const mappedStatus = STATUS_MAP[order.status] ?? order.status
 
-  if (order.id && mappedStatus !== order.status && process.env.DATABASE_URL) {
+  if (order.id && mappedStatus !== order.status) {
     try {
-      await db
-        .update(orders)
-        .set({ status: mappedStatus, updatedAt: new Date() })
-        .where(eq(orders.id, order.id))
-      revalidatePath("/admin/pedidos")
-      revalidatePath(`/admin/pedidos/${order.id}`)
-    } catch (dbErr) {
-      console.warn("DB update error in checkOrderPaymentStatus:", dbErr)
+      await updatePersistentOrderStatus(order.id, mappedStatus)
+    } catch (err) {
+      console.warn("R2 update error in checkOrderPaymentStatus:", err)
     }
+
+    if (process.env.DATABASE_URL) {
+      try {
+        await db
+          .update(orders)
+          .set({ status: mappedStatus, updatedAt: new Date() })
+          .where(eq(orders.id, order.id))
+      } catch (dbErr) {
+        console.warn("DB update error in checkOrderPaymentStatus:", dbErr)
+      }
+    }
+
+    revalidatePath("/admin/pedidos")
+    revalidatePath(`/admin/pedidos/${order.id}`)
+    revalidatePath("/admin")
   }
 
   return { success: true, status: mappedStatus }

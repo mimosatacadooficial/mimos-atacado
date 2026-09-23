@@ -28,6 +28,7 @@ function generateOrderNumber() {
 }
 
 import { saveInMemoryOrder, type CachedOrder } from "@/lib/orders/memory-store"
+import { savePersistentOrder } from "@/lib/orders/store"
 
 
 /**
@@ -150,6 +151,36 @@ export async function createOrder(
     }
 
     saveInMemoryOrder(orderNumber, cachedOrder)
+
+    // Salva permanentemente no Cloudflare R2
+    await savePersistentOrder({
+      id: cachedOrder.id,
+      orderNumber,
+      status: "aguardando_pagamento",
+      subtotalCents,
+      shippingCents,
+      totalCents,
+      customerName: customer.name || null,
+      customerEmail: customer.email || null,
+      customerPhone: customer.phone || null,
+      customerDocument: customer.document || null,
+      shippingState: shipping.state ?? null,
+      shippingCity: shipping.city ?? null,
+      itemCount: cachedOrder.itemCount,
+      items: itemsToInsert,
+      pixPaymentId: paymentResult.id,
+      pixCode: paymentResult.pixCode,
+      pixExpiresAt: cachedOrder.pixExpiresAt ? cachedOrder.pixExpiresAt.toISOString() : null,
+      utmSource: utms.utmSource ?? null,
+      utmCampaign: utms.utmCampaign ?? null,
+      utmMedium: utms.utmMedium ?? null,
+      utmContent: utms.utmContent ?? null,
+      utmTerm: utms.utmTerm ?? null,
+      src: utms.src ?? null,
+      sck: utms.sck ?? null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }).catch((e) => console.error("Error saving persistent order to R2:", e))
 
     // 2. Persiste no banco de dados se configurado
     if (process.env.DATABASE_URL) {
