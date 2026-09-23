@@ -13,7 +13,7 @@ export default function CheckoutPage() {
         Finalizar compra
       </h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        Preencha seus dados para calcular a entrega e concluir o pedido.
+        Preencha seus dados de entrega para concluir o pedido com frete grátis.
       </p>
       <CheckoutForm />
     </div>

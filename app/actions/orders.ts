@@ -110,8 +110,8 @@ export async function createOrder(
       return { success: false, error: "Nenhum produto válido encontrado no carrinho." }
     }
 
-    const shippingCents = subtotalCents >= 30000 ? 0 : 1990
-    const totalCents = subtotalCents + shippingCents
+    const shippingCents = 0
+    const totalCents = subtotalCents
     const orderNumber = generateOrderNumber()
 
     // 1. Gera cobrança PIX na SelectusPay

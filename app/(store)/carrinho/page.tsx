@@ -52,7 +52,10 @@ export default function CartPage() {
             <span>Subtotal</span>
             <span>{formatCentsToBRL(subtotalCents)}</span>
           </div>
-          <p className="text-xs text-muted-foreground">O frete será calculado no checkout.</p>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Frete</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Grátis</span>
+          </div>
           <div className="flex items-center justify-between border-t border-border/60 pt-4 font-heading text-base font-semibold text-foreground">
             <span>Total</span>
             <span>{formatCentsToBRL(subtotalCents)}</span>

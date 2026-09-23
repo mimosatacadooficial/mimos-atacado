@@ -80,8 +80,8 @@ export function CheckoutForm() {
   const numberInputRef = useRef<HTMLInputElement>(null)
   const lastLookedUpCep = useRef<string>("")
 
-  const shippingCents = subtotalCents >= 30000 ? 0 : 1990
-  const totalCents = subtotalCents + shippingCents
+  const shippingCents = 0
+  const totalCents = subtotalCents
 
   function update<K extends keyof FormState>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -373,7 +373,9 @@ export function CheckoutForm() {
         </div>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Frete</span>
-          <span>{shippingCents === 0 ? "Grátis" : formatCentsToBRL(shippingCents)}</span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+            {shippingCents === 0 ? "Grátis" : formatCentsToBRL(shippingCents)}
+          </span>
         </div>
         <div className="flex items-center justify-between text-base font-semibold text-foreground">
           <span>Total</span>
