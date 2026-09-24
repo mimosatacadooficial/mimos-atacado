@@ -2,30 +2,21 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Menu, Search, ShoppingBag, Sparkles, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useCart } from "@/lib/cart-context"
 import { cn } from "@/lib/utils"
+
+import { HeaderSearch } from "@/components/header-search"
 
 type Category = { name: string; slug: string }
 
 export function SiteHeader({ categories }: { categories: Category[] }) {
   const { itemCount } = useCart()
-  const router = useRouter()
-  const [query, setQuery] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (query.trim()) {
-      router.push(`/buscar?q=${encodeURIComponent(query.trim())}`)
-      setMobileOpen(false)
-    }
-  }
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50">
@@ -51,6 +42,9 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
               <SheetHeader>
                 <SheetTitle className="font-heading text-xl">Categorias</SheetTitle>
               </SheetHeader>
+              <div className="px-4 py-2">
+                <HeaderSearch isMobileModal onCloseMobile={() => setMobileOpen(false)} />
+              </div>
               <nav className="flex flex-col gap-1 px-4">
                 <Link
                   href="/"
@@ -96,30 +90,18 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
             />
           </Link>
 
-          <form onSubmit={handleSearch} className="relative ml-2 hidden flex-1 max-w-xl md:flex">
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar produtos..."
-              className="h-11 rounded-full bg-secondary/60 pr-11 border-transparent focus-visible:bg-card"
-              aria-label="Buscar produtos"
-            />
-            <button
-              type="submit"
-              className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:opacity-90"
-              aria-label="Buscar"
-            >
-              <Search className="size-4" />
-            </button>
-          </form>
+          {/* Desktop Instant Live Search */}
+          <div className="relative ml-2 hidden flex-1 max-w-xl md:flex">
+            <HeaderSearch />
+          </div>
 
           <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
               className="md:hidden"
-              render={<Link href="/buscar" aria-label="Buscar produtos" />}
-              nativeButton={false}
+              onClick={() => setMobileSearchOpen((prev) => !prev)}
+              aria-label="Buscar produtos"
             >
               <Search />
             </Button>
@@ -143,6 +125,13 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
             </Button>
           </div>
         </div>
+
+        {/* Mobile Quick Search Bar (Toggled) */}
+        {mobileSearchOpen && (
+          <div className="border-t border-border/50 bg-background/98 px-4 py-2.5 md:hidden animate-in slide-in-from-top-2 duration-150">
+            <HeaderSearch isMobileModal onCloseMobile={() => setMobileSearchOpen(false)} />
+          </div>
+        )}
       </div>
 
       <nav className="hidden bg-foreground md:block">

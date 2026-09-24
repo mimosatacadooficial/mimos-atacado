@@ -4,9 +4,19 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { AddToCartForm } from "@/components/add-to-cart-form"
-import { getProductBySlug } from "@/lib/queries/products"
+import { getProductBySlug, getAllActiveProducts } from "@/lib/queries/products"
 import { formatCentsToBRL } from "@/lib/format"
 import { SITE_URL } from "@/lib/seo"
+import { getReviewsForProduct, getProductRatingSummary } from "@/lib/reviews/store"
+import { ProductRatingBadge } from "@/components/reviews/product-rating-badge"
+import { ProductReviewsSection } from "@/components/reviews/product-reviews-section"
+
+export const revalidate = 60
+
+export async function generateStaticParams() {
+  const products = await getAllActiveProducts()
+  return products.map((p) => ({ slug: p.slug }))
+}
 
 export async function generateMetadata({
   params,
@@ -64,6 +74,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = await getProductBySlug(slug)
 
   if (!product) notFound()
+
+  const [reviews, ratingSummary] = await Promise.all([
+    getReviewsForProduct(product.slug, true),
+    getProductRatingSummary(product.slug),
+  ])
 
   const lowestPriceCents = product.priceTiers?.length
     ? Math.min(...product.priceTiers.map((t) => t.priceCents))
@@ -126,6 +141,33 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           name: "Mimos Atacado",
         },
       },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: ratingSummary.averageRating.toFixed(1),
+        reviewCount: Math.max(1, ratingSummary.totalReviews),
+        bestRating: "5",
+        worstRating: "1",
+      },
+      ...(reviews.length > 0
+        ? {
+            review: reviews.slice(0, 10).map((r) => ({
+              "@type": "Review",
+              author: {
+                "@type": "Person",
+                name: r.authorName,
+              },
+              datePublished: r.createdAt.split("T")[0],
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: r.rating.toString(),
+                bestRating: "5",
+                worstRating: "1",
+              },
+              name: r.title,
+              reviewBody: r.comment,
+            })),
+          }
+        : {}),
     },
   ]
 
@@ -168,8 +210,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <h1 className="font-heading text-2xl font-semibold text-foreground text-balance md:text-3xl">
               {product.name}
             </h1>
+            <div className="mt-2.5">
+              <ProductRatingBadge summary={ratingSummary} variant="full" />
+            </div>
             {product.compareAtPriceCents && product.compareAtPriceCents > product.basePriceCents && (
-              <p className="mt-1 text-sm text-muted-foreground line-through">
+              <p className="mt-2 text-sm text-muted-foreground line-through">
                 {formatCentsToBRL(product.compareAtPriceCents)}
               </p>
             )}
@@ -199,6 +244,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </div>
+
+      {/* Avaliações de Clientes & Revendedores */}
+      <ProductReviewsSection
+        productId={product.id}
+        productSlug={product.slug}
+        productName={product.name}
+        reviews={reviews}
+        summary={ratingSummary}
+      />
     </div>
   )
 }

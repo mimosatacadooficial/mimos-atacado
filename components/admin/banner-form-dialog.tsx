@@ -20,7 +20,7 @@ import { toast } from "sonner"
 type Banner = {
   id: number
   title: string
-  subtitle: string | null
+  subtitle?: string | null
   imageUrl: string
   linkUrl: string | null
   sortOrder: number

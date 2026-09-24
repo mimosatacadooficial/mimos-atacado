@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { ProductGrid } from "@/components/product-grid"
 import { getAllActiveProducts } from "@/lib/queries/products"
 
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: "Catálogo Completo de Maquiagem & Cosméticos para Revenda",
   description:

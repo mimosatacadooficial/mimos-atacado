@@ -1,8 +1,15 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProductGrid } from "@/components/product-grid"
-import { getProductsByCategorySlug } from "@/lib/queries/products"
+import { getProductsByCategorySlug, getAllCategories } from "@/lib/queries/products"
 import { SITE_URL } from "@/lib/seo"
+
+export const revalidate = 60
+
+export async function generateStaticParams() {
+  const categories = await getAllCategories()
+  return categories.map((c) => ({ slug: c.slug }))
+}
 
 export async function generateMetadata({
   params,

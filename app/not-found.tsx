@@ -54,11 +54,14 @@ export default function NotFound() {
       </div>
 
       <div className="mt-8">
-        <Button asChild variant="outline">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <Home className="size-4" />
-            Voltar para o Início
-          </Link>
+        <Button
+          variant="outline"
+          render={<Link href="/" />}
+          nativeButton={false}
+          className="inline-flex items-center gap-2"
+        >
+          <Home className="size-4" />
+          Voltar para o Início
         </Button>
       </div>
     </div>

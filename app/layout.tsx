@@ -11,11 +11,13 @@ import './globals.css'
 const _outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-heading',
+  display: 'swap',
 })
 
 const _inter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -104,8 +106,6 @@ export const metadata: Metadata = {
   },
 }
 
-export const dynamic = 'force-dynamic'
-
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#fdf1f5',
@@ -120,6 +120,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${_outfit.variable} ${_inter.variable} bg-background`}>
       <head>
+        <link rel="preconnect" href="https://pub-db4e48567ea54fc7b07ee1ddbc1f01eb.r2.dev" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pub-db4e48567ea54fc7b07ee1ddbc1f01eb.r2.dev" />
         <JsonLd />
       </head>
       <body className="font-sans antialiased">

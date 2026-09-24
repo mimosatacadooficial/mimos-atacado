@@ -1,22 +1,11 @@
 import { MetadataRoute } from "next"
-import { headers } from "next/headers"
 import { getAllActiveProducts, getAllCategories } from "@/lib/queries/products"
 import { SITE_URL } from "@/lib/seo"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let baseUrl = SITE_URL
-  try {
-    const h = await headers()
-    const host = h.get("x-forwarded-host") || h.get("host")
-    const proto = h.get("x-forwarded-proto") || "https"
-    if (host && !host.includes("localhost")) {
-      baseUrl = `${proto}://${host}`
-    }
-  } catch {
-    baseUrl = SITE_URL
-  }
+  const baseUrl = SITE_URL
 
   const [products, categories] = await Promise.all([
     getAllActiveProducts(),

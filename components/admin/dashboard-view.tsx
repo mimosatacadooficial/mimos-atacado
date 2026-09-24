@@ -5,7 +5,8 @@ import Link from "next/link"
 import { formatCentsToBRL } from "@/lib/format"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import type { DashboardMetrics, ChartPoint, PeriodMetrics } from "@/lib/admin/metrics"
@@ -564,53 +565,58 @@ export function DashboardView({ initialMetrics }: DashboardViewProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Button asChild variant="outline" className="h-auto flex-col items-start gap-1 p-3.5 text-left">
-              <Link href="/admin/produtos/novo">
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <Plus className="size-4 text-primary" />
-                  Novo Produto
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  Cadastrar maquiagem ou kit no catálogo
-                </span>
-              </Link>
-            </Button>
+            <Link
+              href="/admin/produtos/novo"
+              className={cn(buttonVariants({ variant: "outline" }), "h-auto flex-col items-start gap-1 p-3.5 text-left")}
+            >
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <Plus className="size-4 text-primary" />
+                Novo Produto
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Cadastrar maquiagem ou kit no catálogo
+              </span>
+            </Link>
 
-            <Button asChild variant="outline" className="h-auto flex-col items-start gap-1 p-3.5 text-left">
-              <Link href="/admin/pedidos">
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <ShoppingCart className="size-4 text-emerald-500" />
-                  Ver Todos os Pedidos
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  Acompanhar envios e PIX gerados
-                </span>
-              </Link>
-            </Button>
+            <Link
+              href="/admin/pedidos"
+              className={cn(buttonVariants({ variant: "outline" }), "h-auto flex-col items-start gap-1 p-3.5 text-left")}
+            >
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <ShoppingCart className="size-4 text-emerald-500" />
+                Ver Todos os Pedidos
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Acompanhar envios e PIX gerados
+              </span>
+            </Link>
 
-            <Button asChild variant="outline" className="h-auto flex-col items-start gap-1 p-3.5 text-left">
-              <Link href="/admin/banners">
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <ImageIcon className="size-4 text-blue-500" />
-                  Banners da Loja
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  Personalizar os destaques da vitrine
-                </span>
-              </Link>
-            </Button>
+            <Link
+              href="/admin/banners"
+              className={cn(buttonVariants({ variant: "outline" }), "h-auto flex-col items-start gap-1 p-3.5 text-left")}
+            >
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <ImageIcon className="size-4 text-blue-500" />
+                Banners da Loja
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Personalizar os destaques da vitrine
+              </span>
+            </Link>
 
-            <Button asChild variant="outline" className="h-auto flex-col items-start gap-1 p-3.5 text-left">
-              <Link href="/" target="_blank">
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <ExternalLink className="size-4 text-primary" />
-                  Ver Loja Online
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  Visualizar a loja como cliente
-                </span>
-              </Link>
-            </Button>
+            <Link
+              href="/"
+              target="_blank"
+              className={cn(buttonVariants({ variant: "outline" }), "h-auto flex-col items-start gap-1 p-3.5 text-left")}
+            >
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <ExternalLink className="size-4 text-primary" />
+                Ver Loja Online
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Visualizar a loja como cliente
+              </span>
+            </Link>
           </CardContent>
 
           {/* Test Order Simulator for Admin */}
@@ -659,12 +665,13 @@ export function DashboardView({ initialMetrics }: DashboardViewProps) {
               <span className="font-medium text-foreground">{PERIOD_LABELS[period]}</span>
             </CardDescription>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1 text-xs text-primary">
-            <Link href="/admin/pedidos">
-              Ver todos
-              <ArrowUpRight className="size-3.5" />
-            </Link>
-          </Button>
+          <Link
+            href="/admin/pedidos"
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1 text-xs text-primary")}
+          >
+            Ver todos
+            <ArrowUpRight className="size-3.5" />
+          </Link>
         </CardHeader>
         <CardContent>
           {activeMetrics.recentOrders.length === 0 ? (
@@ -716,12 +723,13 @@ export function DashboardView({ initialMetrics }: DashboardViewProps) {
                         {formatCentsToBRL(ord.totalCents)}
                       </td>
                       <td className="py-2.5 text-right">
-                        <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-xs">
-                          <Link href={`/admin/pedidos/${ord.id}`}>
-                            <Eye className="size-3.5 mr-1" />
-                            Detalhes
-                          </Link>
-                        </Button>
+                        <Link
+                          href={`/admin/pedidos/${ord.id}`}
+                          className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "h-7 px-2 text-xs")}
+                        >
+                          <Eye className="size-3.5 mr-1" />
+                          Detalhes
+                        </Link>
                       </td>
                     </tr>
                   ))}

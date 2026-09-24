@@ -5,12 +5,13 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { logoutAdmin } from "@/app/actions/admin-auth"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Package, ShoppingCart, Image as ImageIcon, LogOut, Sparkles, ExternalLink } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Image as ImageIcon, Star, LogOut, Sparkles, ExternalLink } from "lucide-react"
 
 const navItems = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/produtos", label: "Produtos", icon: Package },
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingCart },
+  { href: "/admin/avaliacoes", label: "Avaliações", icon: Star },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
 ]
 

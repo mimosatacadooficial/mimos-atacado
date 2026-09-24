@@ -30,7 +30,16 @@ export function ProductCard({ product }: { product: ProductWithTiers }) {
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <p className="line-clamp-2 text-sm font-medium leading-snug text-foreground">{product.name}</p>
-        <div className="mt-auto flex flex-col gap-0.5 pt-2">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center text-amber-400">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} className="text-[10px]">★</span>
+            ))}
+          </div>
+          <span className="font-semibold text-foreground">4.9</span>
+          <span>• Atacado Verificado</span>
+        </div>
+        <div className="mt-auto flex flex-col gap-0.5 pt-1.5">
           {hasDiscount && (
             <span className="text-xs text-muted-foreground line-through">
               {formatCentsToBRL(product.compareAtPriceCents!)}

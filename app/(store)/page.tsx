@@ -6,6 +6,8 @@ import { ProductCard } from "@/components/product-card"
 import { getActiveBanners } from "@/lib/queries/banners"
 import { getAllActiveProducts, getFeaturedProducts } from "@/lib/queries/products"
 
+export const revalidate = 60
+
 export const metadata: Metadata = {
   alternates: {
     canonical: "/",
@@ -22,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-14 py-8 md:py-10">
-      {banners[0] && <HeroBanner banner={banners[0]} />}
+      {banners[0] && <HeroBanner banner={banners[0]} priority={true} />}
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 md:px-6">
       <section className="flex flex-col gap-6">

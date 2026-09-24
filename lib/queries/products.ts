@@ -40,7 +40,9 @@ function mapCatalogProductToStore(p: CatalogProduct): ProductWithTiers {
   }
 }
 
-export async function getFeaturedProducts(limit = 8): Promise<ProductWithTiers[]> {
+import { cache } from "react"
+
+export const getFeaturedProducts = cache(async function getFeaturedProducts(limit = 8): Promise<ProductWithTiers[]> {
   try {
     const catalog = await getCatalog()
     return catalog.products
@@ -51,9 +53,9 @@ export async function getFeaturedProducts(limit = 8): Promise<ProductWithTiers[]
     console.error("Error fetching featured products:", error)
     return []
   }
-}
+})
 
-export async function getAllActiveProducts(): Promise<ProductWithTiers[]> {
+export const getAllActiveProducts = cache(async function getAllActiveProducts(): Promise<ProductWithTiers[]> {
   try {
     const catalog = await getCatalog()
     return catalog.products
@@ -63,9 +65,9 @@ export async function getAllActiveProducts(): Promise<ProductWithTiers[]> {
     console.error("Error fetching active products:", error)
     return []
   }
-}
+})
 
-export async function getProductsByCategorySlug(slug: string): Promise<{
+export const getProductsByCategorySlug = cache(async function getProductsByCategorySlug(slug: string): Promise<{
   category: MockCategory | null
   products: ProductWithTiers[]
 }> {
@@ -102,7 +104,7 @@ export async function getProductsByCategorySlug(slug: string): Promise<{
     console.error("Error fetching products by category:", error)
     return { category: null, products: [] }
   }
-}
+})
 
 export async function searchProducts(query: string): Promise<ProductWithTiers[]> {
   try {
@@ -130,7 +132,7 @@ const SLUG_ALIASES: Record<string, string> = {
   "paleta-sombras-12-cores": "kit-de-maquiagem-40-itens-para-revender",
 }
 
-export async function getProductBySlug(slug: string): Promise<ProductWithTiers | null> {
+export const getProductBySlug = cache(async function getProductBySlug(slug: string): Promise<ProductWithTiers | null> {
   try {
     const cleanSlug = slug.trim().toLowerCase()
     const targetSlug = SLUG_ALIASES[cleanSlug] || cleanSlug
@@ -144,9 +146,9 @@ export async function getProductBySlug(slug: string): Promise<ProductWithTiers |
     console.error("Error fetching product by slug:", error)
     return null
   }
-}
+})
 
-export async function getAllCategories(): Promise<MockCategory[]> {
+export const getAllCategories = cache(async function getAllCategories(): Promise<MockCategory[]> {
   try {
     const catalog = await getCatalog()
     return catalog.categories.map((c) => ({
@@ -162,7 +164,7 @@ export async function getAllCategories(): Promise<MockCategory[]> {
     console.error("Error fetching categories:", error)
     return []
   }
-}
+})
 
 /** Returns the applicable unit price in cents for a given quantity, using the highest tier threshold met. */
 export function getUnitPriceForQuantity(product: ProductWithTiers, quantity: number) {

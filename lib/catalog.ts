@@ -86,10 +86,17 @@ export type ProductInput = {
 }
 
 
-// In-memory cache for ultra-fast server rendering
+// In-memory cache for ultra-fast server rendering (10 minutes with instant invalidation on admin edits)
 let memoryCatalog: CatalogData | null = null
 let lastFetchedAt = 0
-const CACHE_TTL_MS = 3000 // 3 seconds in-memory cache
+let pendingCatalogPromise: Promise<CatalogData> | null = null
+const CACHE_TTL_MS = 1000 * 60 * 10 // 10 minutes
+
+export function invalidateCatalogCache(): void {
+  memoryCatalog = null
+  lastFetchedAt = 0
+  pendingCatalogPromise = null
+}
 
 function buildDefaultCatalog(): CatalogData {
   const initialCategories: CatalogCategory[] = DEFAULT_CATEGORIES.map((c) => ({
@@ -184,14 +191,8 @@ async function writeCatalogToR2(catalog: CatalogData): Promise<void> {
   }
 }
 
-/**
- * Gets the current catalog, combining PostgreSQL (if active) and Cloudflare R2 persistent storage.
- */
-export async function getCatalog(forceRefresh = false): Promise<CatalogData> {
+async function fetchCatalogInternal(): Promise<CatalogData> {
   const now = Date.now()
-  if (!forceRefresh && memoryCatalog && now - lastFetchedAt < CACHE_TTL_MS) {
-    return memoryCatalog
-  }
 
   // Check PostgreSQL first if configured
   if (isDatabaseConfigured()) {
@@ -288,6 +289,27 @@ export async function getCatalog(forceRefresh = false): Promise<CatalogData> {
   memoryCatalog = r2Catalog
   lastFetchedAt = now
   return r2Catalog
+}
+
+/**
+ * Gets the current catalog, combining PostgreSQL (if active) and Cloudflare R2 persistent storage.
+ * Uses in-memory caching with single-flight deduplication to avoid redundant roundtrips.
+ */
+export async function getCatalog(forceRefresh = false): Promise<CatalogData> {
+  const now = Date.now()
+  if (!forceRefresh && memoryCatalog && now - lastFetchedAt < CACHE_TTL_MS) {
+    return memoryCatalog
+  }
+
+  if (pendingCatalogPromise && !forceRefresh) {
+    return pendingCatalogPromise
+  }
+
+  pendingCatalogPromise = fetchCatalogInternal().finally(() => {
+    pendingCatalogPromise = null
+  })
+
+  return pendingCatalogPromise
 }
 
 /**
