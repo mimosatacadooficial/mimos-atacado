@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { useCart } from "@/lib/cart-context"
 import { createOrder } from "@/app/actions/orders"
 import { getStoredUtms } from "@/lib/utm"
@@ -144,6 +145,32 @@ export function CheckoutForm() {
     }
   }
 
+  const FIELD_ORDER: (keyof FormState)[] = [
+    "name",
+    "email",
+    "phone",
+    "cpf",
+    "cep",
+    "street",
+    "number",
+    "neighborhood",
+    "city",
+    "state",
+  ]
+
+  function scrollToFirstError(errorsMap: Partial<Record<keyof FormState, string>>) {
+    const firstErrorKey = FIELD_ORDER.find((key) => errorsMap[key])
+    if (!firstErrorKey) return
+
+    const inputEl = document.getElementById(firstErrorKey)
+    if (inputEl) {
+      inputEl.scrollIntoView({ behavior: "smooth", block: "center" })
+      setTimeout(() => {
+        inputEl.focus({ preventScroll: true })
+      }, 150)
+    }
+  }
+
   function validate() {
     const next: Partial<Record<keyof FormState, string>> = {}
     if (!form.name.trim()) next.name = "Informe seu nome completo."
@@ -161,7 +188,18 @@ export function CheckoutForm() {
     if (!form.city.trim()) next.city = "Informe a cidade."
     if (!form.state.trim()) next.state = "Informe o estado."
     setErrors(next)
-    return Object.keys(next).length === 0
+
+    const hasErrors = Object.keys(next).length > 0
+    if (hasErrors) {
+      scrollToFirstError(next)
+      const firstErrorMessage = FIELD_ORDER.map((k) => next[k]).find(Boolean)
+      if (firstErrorMessage) {
+        toast.error(firstErrorMessage)
+      }
+      return false
+    }
+
+    return true
   }
 
   function handleSubmit(e?: React.FormEvent) {

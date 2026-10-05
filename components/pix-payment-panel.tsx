@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { checkOrderPaymentStatus } from "@/app/actions/payment-status"
 import { formatCentsToBRL } from "@/lib/format"
+import { cn } from "@/lib/utils"
 
 function formatTimeLeft(ms: number) {
   if (ms <= 0) return "00:00"
@@ -190,7 +191,7 @@ export function PixPaymentPanel({
           <span className="h-px w-10 bg-border" />
         </div>
 
-        <div className="rounded-xl border border-border/80 bg-background p-2.5 shadow-2xs">
+        <div className="rounded-xl border border-border/80 bg-background p-2.5 shadow-xs">
           <Image
             src={qrDataUrl || "/placeholder.svg"}
             alt="QR Code para pagamento via PIX"

@@ -65,7 +65,22 @@ export default async function PaymentPage({
     redirect(`/pedido-confirmado?numero=${orderData.orderNumber}`)
   }
 
-  const qrDataUrl = await QRCode.toDataURL(orderData.pixCode, { width: 440, margin: 1 })
+  let qrDataUrl = ""
+  try {
+    qrDataUrl = await QRCode.toDataURL(orderData.pixCode, { width: 440, margin: 1 })
+  } catch (err) {
+    console.error("Failed to generate QRCode data URL:", err)
+  }
+
+  const expiresAtIso = orderData.pixExpiresAt
+    ? orderData.pixExpiresAt instanceof Date
+      ? !isNaN(orderData.pixExpiresAt.getTime())
+        ? orderData.pixExpiresAt.toISOString()
+        : null
+      : typeof orderData.pixExpiresAt === "string"
+        ? orderData.pixExpiresAt
+        : null
+    : null
 
   return (
     <div className="mx-auto max-w-md px-4 py-6 sm:py-10 sm:px-6 lg:px-8">
@@ -80,7 +95,7 @@ export default async function PaymentPage({
         pixCode={orderData.pixCode}
         qrDataUrl={qrDataUrl}
         totalCents={orderData.totalCents}
-        expiresAt={orderData.pixExpiresAt ? orderData.pixExpiresAt.toISOString() : null}
+        expiresAt={expiresAtIso}
       />
     </div>
   )
