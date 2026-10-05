@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { Outfit, Inter } from 'next/font/google'
 import { CartProvider } from '@/lib/cart-context'
 import { UtmCapture } from '@/components/utm-capture'
+import { MetaPixel } from '@/components/meta-pixel'
 import { JsonLd } from '@/components/json-ld'
 import { SITE_CONFIG, SITE_URL, SEO_KEYWORDS } from '@/lib/seo'
 import './globals.css'
@@ -125,6 +126,7 @@ export default function RootLayout({
         <JsonLd />
       </head>
       <body className="font-sans antialiased">
+        <MetaPixel />
         <UtmCapture />
         <CartProvider>{children}</CartProvider>
         <Toaster position="top-center" richColors />

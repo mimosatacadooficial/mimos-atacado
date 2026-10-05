@@ -68,12 +68,12 @@ export default async function PaymentPage({
   const qrDataUrl = await QRCode.toDataURL(orderData.pixCode, { width: 440, margin: 1 })
 
   return (
-    <div className="mx-auto max-w-md px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-md px-4 py-6 sm:py-10 sm:px-6 lg:px-8">
       <h1 className="mb-1 font-heading text-2xl font-semibold text-balance sm:text-3xl">
         Pague com PIX
       </h1>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Escaneie o QR Code ou copie o código para concluir seu pedido. Aprovação imediata via SelectusPay.
+      <p className="mb-4 sm:mb-6 text-sm text-muted-foreground">
+        Escaneie o QR Code ou copie o código Pix abaixo para concluir seu pedido. Aprovação imediata.
       </p>
       <PixPaymentPanel
         orderNumber={orderData.orderNumber}

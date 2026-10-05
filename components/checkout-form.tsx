@@ -296,20 +296,20 @@ export function CheckoutForm() {
             </FieldDescription>
             <FieldError>{errors.cep}</FieldError>
           </Field>
-          <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-            <Field data-invalid={!!errors.street}>
-              <FieldLabel htmlFor="street">Endereço</FieldLabel>
-              <Input
-                id="street"
-                value={form.street}
-                onChange={(e) => update("street", e.target.value)}
-                aria-invalid={!!errors.street}
-                autoComplete="off"
-                data-lpignore="true"
-                data-form-type="other"
-              />
-              <FieldError>{errors.street}</FieldError>
-            </Field>
+          <Field data-invalid={!!errors.street}>
+            <FieldLabel htmlFor="street">Endereço</FieldLabel>
+            <Input
+              id="street"
+              value={form.street}
+              onChange={(e) => update("street", e.target.value)}
+              aria-invalid={!!errors.street}
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
+            />
+            <FieldError>{errors.street}</FieldError>
+          </Field>
+          <div className="grid grid-cols-[110px_1fr] gap-3 sm:gap-4">
             <Field data-invalid={!!errors.number}>
               <FieldLabel htmlFor="number">Número</FieldLabel>
               <Input
@@ -324,8 +324,6 @@ export function CheckoutForm() {
               />
               <FieldError>{errors.number}</FieldError>
             </Field>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel htmlFor="complement">Complemento (opcional)</FieldLabel>
               <Input
@@ -337,19 +335,19 @@ export function CheckoutForm() {
                 data-form-type="other"
               />
             </Field>
-            <Field>
-              <FieldLabel htmlFor="neighborhood">Bairro</FieldLabel>
-              <Input
-                id="neighborhood"
-                value={form.neighborhood}
-                onChange={(e) => update("neighborhood", e.target.value)}
-                autoComplete="off"
-                data-lpignore="true"
-                data-form-type="other"
-              />
-            </Field>
           </div>
-          <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
+          <Field>
+            <FieldLabel htmlFor="neighborhood">Bairro</FieldLabel>
+            <Input
+              id="neighborhood"
+              value={form.neighborhood}
+              onChange={(e) => update("neighborhood", e.target.value)}
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
+            />
+          </Field>
+          <div className="grid grid-cols-[1fr_80px] sm:grid-cols-[1fr_110px] gap-3 sm:gap-4">
             <Field data-invalid={!!errors.city}>
               <FieldLabel htmlFor="city">Cidade</FieldLabel>
               <Input
@@ -373,6 +371,7 @@ export function CheckoutForm() {
                 autoComplete="off"
                 data-lpignore="true"
                 data-form-type="other"
+                maxLength={2}
               />
               <FieldError>{errors.state}</FieldError>
             </Field>
@@ -386,10 +385,10 @@ export function CheckoutForm() {
         </p>
       )}
 
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Subtotal</span>
-          <span>{formatCentsToBRL(subtotalCents)}</span>
+          <span className="font-medium text-foreground">{formatCentsToBRL(subtotalCents)}</span>
         </div>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Frete</span>
@@ -397,9 +396,9 @@ export function CheckoutForm() {
             {shippingCents === 0 ? "Grátis" : formatCentsToBRL(shippingCents)}
           </span>
         </div>
-        <div className="flex items-center justify-between text-base font-semibold text-foreground">
+        <div className="flex items-center justify-between border-t border-border/60 pt-3 text-base font-bold text-foreground">
           <span>Total</span>
-          <span>{formatCentsToBRL(totalCents)}</span>
+          <span className="text-lg text-primary">{formatCentsToBRL(totalCents)}</span>
         </div>
       </div>
 
@@ -407,7 +406,7 @@ export function CheckoutForm() {
         type="button"
         onClick={() => handleSubmit()}
         size="lg"
-        className="glow-sm"
+        className="w-full h-12 text-base font-semibold shadow-md glow-sm active:scale-[0.99]"
         disabled={isPending}
       >
         {isPending ? (
