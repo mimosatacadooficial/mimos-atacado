@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Check, Copy, Loader2, TimerReset, XCircle } from "lucide-react"
+import { Check, CheckCircle2, Copy, Loader2, TimerReset, XCircle } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { checkOrderPaymentStatus } from "@/app/actions/payment-status"
@@ -67,6 +67,7 @@ export function PixPaymentPanel({
       if (result.success) {
         if (result.status === "pago") {
           setStatus("pago")
+          toast.success("Pagamento aprovado! Redirecionando...")
           router.push(`/pedido-confirmado?numero=${orderNumber}`)
           return
         }
@@ -76,7 +77,7 @@ export function PixPaymentPanel({
         }
       }
 
-      timeoutId = setTimeout(poll, 5000)
+      timeoutId = setTimeout(poll, 3000)
     }
 
     poll()
@@ -95,6 +96,21 @@ export function PixPaymentPanel({
     } catch {
       toast.error("Não foi possível copiar o código.")
     }
+  }
+
+  if (status === "pago") {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-500/30 bg-card p-8 text-center shadow-md animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex size-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+          <CheckCircle2 className="size-10 text-emerald-600 animate-pulse" />
+        </div>
+        <h2 className="font-heading text-2xl font-bold text-foreground">Pagamento Aprovado!</h2>
+        <p className="text-sm text-muted-foreground">
+          Confirmamos o recebimento do seu PIX. Redirecionando para os detalhes do seu pedido...
+        </p>
+        <Loader2 className="size-5 animate-spin text-primary mt-2" />
+      </div>
+    )
   }
 
   if (status === "expirado") {

@@ -54,6 +54,23 @@ export async function checkOrderPaymentStatus(orderNumber: string): Promise<Paym
     return { success: false, error: "Pedido não encontrado." }
   }
 
+  // Se ainda não consta como pago no DB, verifica no memory store e no Cloudflare R2 (onde o webhook pode ter atualizado)
+  if (order.status !== "pago") {
+    const memOrder = getInMemoryOrder(orderNumber)
+    if (memOrder && memOrder.status === "pago") {
+      order.status = "pago"
+    } else {
+      try {
+        const r2Order = await getPersistentOrderByNumber(orderNumber)
+        if (r2Order && r2Order.status === "pago") {
+          order.status = "pago"
+        }
+      } catch (err) {
+        console.warn("R2 lookup in checkOrderPaymentStatus:", err)
+      }
+    }
+  }
+
   // Se já foi pago ou finalizado, retorna o status diretamente
   if (order.status === "pago" || order.status === "expirado" || order.status === "reembolsado") {
     return { success: true, status: order.status }
